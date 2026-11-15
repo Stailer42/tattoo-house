@@ -5,3 +5,11 @@ tmp/
 # original full-size photos (optimized copies live in assets/)
 фото/
 фото з тату/
+# admin panel reference (source copy, has its own .git and AVER data)
+admin-panel копія/
+# secrets and local config (never commit)
+.env
+.env.*
+!.env.example
+config.js
+__pycache__/
