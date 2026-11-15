@@ -1,0 +1,7 @@
+# macOS
+.DS_Store
+# local working files
+tmp/
+# original full-size photos (optimized copies live in assets/)
+фото/
+фото з тату/
