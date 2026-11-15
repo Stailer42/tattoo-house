@@ -577,6 +577,7 @@ textarea.field__input { min-height: 110px; resize: vertical; }
 .tag--red { background: var(--red); }
 .master-card__facts { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--line); margin: 6px 0; }
 .master-card__facts div { background: var(--bg); padding: 12px 14px 12px 0; }
+.master-card__facts div + div { padding-left: 14px; }
 .master-card__facts dt { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--grey); }
 .master-card__facts dd { margin: 4px 0 0; font-size: 17px; font-weight: 600; }
 .master-card p { color: rgba(242,242,242,.78); }
