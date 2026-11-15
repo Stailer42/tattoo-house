@@ -68,6 +68,8 @@ h1, h2, h3, p { margin: 0; }
 :focus-visible { outline: 2px solid var(--red-hi); outline-offset: 3px; }
 [hidden] { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* honeypot: поле-пастка для ботів у формах, людям не видно */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .skip { position: fixed; top: 10px; left: 10px; z-index: 100; padding: 12px 18px; background: var(--red); color: #fff; font-weight: 600; transform: translateY(-150%); transition: transform 300ms var(--ease); }
 .skip:focus { transform: none; }
 .d1 { --d: 300ms; } .d2 { --d: 420ms; } .d3 { --d: 900ms; } .d4 { --d: 1040ms; } .d5 { --d: 1200ms; } .d6 { --d: 1350ms; }
@@ -470,6 +472,7 @@ body.menu-open .brand-title { visibility: hidden; }
 .giveaway__rules { display: grid; gap: 8px; margin-top: var(--s2); }
 .giveaway__rules li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; }
 .giveaway__rules span { font-family: var(--f-display); }
+.gw-plain { font-weight: inherit; }
 .giveaway__panel { display: grid; gap: var(--s3); padding: var(--s4) var(--s3); background: var(--bg); clip-path: var(--chamfer); }
 .timer { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .timer__cell { display: grid; justify-items: center; gap: 4px; padding: 14px 4px; background: var(--bg-3); clip-path: var(--chamfer-sm); }

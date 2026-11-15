@@ -1,6 +1,8 @@
 /* =========================================================
    TATTOO HOUSE: shared script
-   Data (services, masters, gallery) + all page behaviour.
+   All page behaviour. Data (services, masters, gallery, reviews,
+   contacts, giveaway) comes from lib/site-data.js: Supabase when
+   config.js is present, built-in seed otherwise (demo mode).
    Works from file:// and from GitHub Pages, no build step.
    ========================================================= */
 (function () {
@@ -26,64 +28,33 @@
   };
 
   /* =========================================================
-     DATA (fictional salon, all names and prices are made up)
+     DATA: filled by applyData() from lib/site-data.js
      ========================================================= */
-  var SERVICES = [
-    { id: 'tattoo', name: 'Тату', icon: 'dagger', price: 1500, unit: '',
-      text: 'Від мініатюри до' + NB + 'рукава. Ескіз погоджуємо до' + NB + 'сеансу, а' + NB + 'не' + NB + 'під машинкою.' },
-    { id: 'piercing', name: 'Пірсинг', icon: 'star', price: 600, unit: '',
-      text: 'Вуха, ніс, брова, губа. Титанові прикраси імплант-класу вже в' + NB + 'ціні.' },
-    { id: 'coverup', name: 'Перекриття', icon: 'flame', price: 3000, unit: '',
-      text: 'Ховаємо старе або невдале тату під нову роботу, якої не' + NB + 'соромно.' },
-    { id: 'sketch', name: 'Ескіз на' + NB + 'замовлення', icon: 'bolt', price: 800, unit: '',
-      text: 'Унікальний малюнок тільки під вас. Два раунди правок без' + NB + 'доплат.' },
-    { id: 'correction', name: 'Корекція', icon: 'horns', price: 1200, unit: '',
-      text: 'Оновлюємо вицвілі контури та' + NB + 'колір, виправляємо чужі помилки.' },
-    { id: 'removal', name: 'Лазерне видалення', icon: 'skull', price: 900, unit: '/сеанс',
-      text: 'Видалення або висвітлення старого тату під' + NB + 'перекриття. Ціна за' + NB + 'сеанс.' }
-  ];
+  var SERVICES = [], MASTERS = [], GALLERY = [], REVIEWS = [], INFO = {}, GIVEAWAY = {};
+  var GIVEAWAY_END = new Date(0);
+  var POS_CLASS = { top: 'master__photo--pos-top', wide: 'master__photo--wide' };
+  var ART = ['dagger', 'star', 'flame', 'bolt', 'horns', 'skull'];
 
-  var MASTERS = [
-    { slug: 'ostap', name: 'Остап Коваль', nick: 'Шрам', style: 'Реалізм ч/б', photo: 'assets/masters/master-1.jpg', photoClass: 'master__photo--pos-top',
-      tags: ['Реалізм', 'Портрети', 'Чорно-сіре'], exp: 12, price: '1' + NB + '200' + NB + '₴/год',
-      about: 'Портрети, тварини, кінематографічні сюжети. Працює з' + NB + 'тінню так, що тату виглядає як фото на' + NB + 'шкірі.' },
-    { slug: 'solomiia', name: 'Соломія Гнатюк', nick: 'Ніч', style: 'Графіка / дотворк', photo: 'assets/masters/master-2.jpg', photoClass: 'master__photo--pos-top',
-      tags: ['Графіка', 'Дотворк', 'Орнамент'], exp: 8, price: '1' + NB + '000' + NB + '₴/год',
-      about: 'Орнаменти, ботаніка, сакральна геометрія. Чисті лінії та' + NB + 'крапкова тінь, що гарно старіє разом з' + NB + 'вами.' },
-    { slug: 'taras', name: 'Тарас Мельник', nick: 'Борода', style: 'Олдскул / неотрад', photo: 'assets/masters/master-3.jpg', photoClass: 'master__photo--pos-top',
-      tags: ['Олдскул', 'Неотрад', 'Колір'], exp: 10, price: '1' + NB + '500–6' + NB + '000' + NB + '₴',
-      about: 'Ластівки, кинджали, троянди, пантери. Жирний контур і' + NB + 'насичений колір: класика, яка не' + NB + 'виходить з' + NB + 'моди.' },
-    { slug: 'alex', name: 'Алекс Мороз', nick: 'Вайпер', style: 'Пірсинг / мініатюри', photo: 'assets/masters/master-4.jpg', photoClass: 'master__photo--wide',
-      tags: ['Пірсинг', 'Мініатюри', 'Fine line'], exp: 6, price: 'від 600' + NB + '₴',
-      about: 'Проколи будь-якої складності та' + NB + 'тонкі мініатюри. Стерильність, яку можна перевірити: усе відкривається при' + NB + 'вас.' },
-    { slug: 'iryna', name: 'Ірина Савчук', nick: 'Лисиця', style: 'Акварель / колір', photo: 'assets/masters/master-5.jpg', photoClass: 'master__photo--wide',
-      tags: ['Акварель', 'Колір', 'Ботаніка'], exp: 7, price: '1' + NB + '100' + NB + '₴/год',
-      about: 'Розмиті кольорові плями, квіти, тварини в' + NB + 'акварельній техніці. Контур підбирає так, щоб колір не' + NB + 'поплив з' + NB + 'роками.' },
-    { slug: 'dana', name: 'Дана Остапчук', nick: 'Кобра', style: 'Леттеринг / каліграфія', photo: 'assets/masters/master-6.jpg', photoClass: 'master__photo--wide',
-      tags: ['Леттеринг', 'Каліграфія', 'Шрифти'], exp: 9, price: '900–4' + NB + '000' + NB + '₴',
-      about: 'Написи будь-якою мовою, власні шрифти, готичний і' + NB + 'чикано-леттеринг. Перевіряє кожну літеру перед' + NB + 'сеансом.' },
-    { slug: 'bohdan', name: 'Богдан Яремчук', nick: 'Тінь', style: 'Перекриття / корекція', photo: null, photoClass: '',
-      tags: ['Перекриття', 'Корекція', 'Блекворк'], exp: 14, price: '1' + NB + '300' + NB + '₴/год',
-      about: 'Рятує те, що здавалося безнадійним: старі наколки, розпливлі контури, невдалі написи. Перекриває так, що старого не' + NB + 'видно.' },
-    { slug: 'vlad', name: 'Влад Данилюк', nick: 'Голка', style: 'Японський стиль', photo: null, photoClass: '',
-      tags: ['Ірезумі', 'Великі проєкти', 'Рукави'], exp: 11, price: 'від 2' + NB + '500' + NB + '₴/сеанс',
-      about: 'Дракони, коі, хвилі та' + NB + 'маски ханья. Веде великі проєкти на' + NB + 'спину чи рукав від ескізу до' + NB + 'останнього сеансу.' }
-  ];
+  function applyData(d) {
+    SERVICES = d.services.map(function (x) {
+      return { id: x.id, name: x.name, icon: ART.indexOf(x.icon) > -1 ? x.icon : 'dagger', price: Number(x.price) || 0, unit: x.unit || '', text: x.text || '' };
+    });
+    MASTERS = d.masters.map(function (m) {
+      return { slug: m.id, name: m.name, nick: m.nick || '', style: m.style || '', photo: m.photo || null, photoClass: POS_CLASS[m.photo_pos] || '',
+        tags: m.tags || [], exp: Number(m.exp) || 0, price: m.price || '', about: m.about || '' };
+    });
+    GALLERY = d.gallery.map(function (g) {
+      return { src: g.src, w: g.w, h: g.h, alt: g.alt, style: g.style || '', master: g.master_id || null };
+    });
+    REVIEWS = d.reviews || [];
+    INFO = d.info || {};
+    GIVEAWAY = d.giveaway || {};
+    GIVEAWAY_END = new Date(GIVEAWAY.ends_at || 0);
+  }
 
-  var GALLERY = [
-    { src: 'assets/tattoos/tattoo-01.jpg', w: 722, h: 775, alt: 'Чорно-біле тату: кошеня, що сидить у кедах', style: 'Графіка', master: 'solomiia' },
-    { src: 'assets/tattoos/tattoo-02.jpg', w: 506, h: 805, alt: 'Реалістичне чорно-сіре тату кошеняти з бляшанкою на передпліччі', style: 'Реалізм', master: 'ostap' },
-    { src: 'assets/tattoos/tattoo-03.jpg', w: 506, h: 900, alt: 'Гострий графічний орнамент від передпліччя до пальців', style: 'Графіка', master: 'solomiia' },
-    { src: 'assets/tattoos/tattoo-04.jpg', w: 506, h: 900, alt: 'Тату на кисті: готичний хрест із зірками та колючими лініями', style: 'Блекворк', master: 'bohdan' },
-    { src: 'assets/tattoos/tattoo-05.jpg', w: 543, h: 900, alt: 'Гілка сакури та англійські написи на плечі', style: 'Fine line', master: 'dana' },
-    { src: 'assets/tattoos/tattoo-06.jpg', w: 506, h: 900, alt: 'Передпліччя: ангел, хрест і каліграфічний напис', style: 'Леттеринг', master: 'dana' },
-    { src: 'assets/tattoos/tattoo-07.jpg', w: 745, h: 900, alt: 'Японський дракон із блискавками на всю спину', style: 'Ірезумі', master: 'vlad' },
-    { src: 'assets/tattoos/tattoo-08.jpg', w: 675, h: 900, alt: 'Птах і колючі орнаменти на плечі та грудях', style: 'Графіка', master: 'ostap' },
-    { src: 'assets/tattoos/tattoo-09.jpg', w: 720, h: 900, alt: 'Рукав із японським драконом і квітами сакури', style: 'Ірезумі', master: 'vlad' },
-    { src: 'assets/tattoos/tattoo-10.jpg', w: 605, h: 807, alt: 'Реалістичний кольоровий орел на лобі', style: 'Реалізм', master: 'ostap' }
-  ];
-
-  var GIVEAWAY_END = new Date('2026-12-31T23:59:00+02:00');
+  // «Псевдо» майстра в лапках або нічого, якщо його не вказали
+  function nickq(m) { return m && m.nick ? ' «' + esc(m.nick) + '»' : ''; }
+  function phoneHref(p) { return 'tel:+' + String(p || '').replace(/\D/g, ''); }
 
   function masterBySlug(slug) {
     for (var i = 0; i < MASTERS.length; i++) if (MASTERS[i].slug === slug) return MASTERS[i];
@@ -195,6 +166,7 @@
   function initCounters() {
     var els = $$('[data-count]');
     if (!els.length) return;
+    countersStarted = true;
     function run(el) {
       var target = parseFloat(el.getAttribute('data-count'));
       var dec = parseInt(el.getAttribute('data-decimals') || '0', 10);
@@ -277,9 +249,9 @@
       return '<article class="service" data-reveal="up">' +
         '<span class="service__num">' + String(i + 1).padStart(2, '0') + ' /</span>' +
         icon(s.icon, 'service__icon') +
-        '<h3>' + s.name + '</h3>' +
-        '<p>' + s.text + '</p>' +
-        '<p class="service__price">від <strong>' + price(s.price) + '</strong>' + s.unit + '</p>' +
+        '<h3>' + esc(s.name) + '</h3>' +
+        '<p>' + esc(s.text) + '</p>' +
+        '<p class="service__price">від <strong>' + price(s.price) + '</strong>' + esc(s.unit) + '</p>' +
         '</article>';
     }).join('');
   }
@@ -287,14 +259,16 @@
   function workHTML(item, i, lazy) {
     var m = masterBySlug(item.master);
     return '<button type="button" class="work" data-reveal="zoom" data-index="' + i + '" aria-label="Відкрити фото: ' + esc(item.alt) + '">' +
-      '<img src="' + item.src + '" alt="' + esc(item.alt) + '" width="' + item.w + '" height="' + item.h + '"' + (lazy ? ' loading="lazy"' : '') + ' decoding="async">' +
-      '<span class="work__cap"><span>' + esc(item.style) + (m ? ' / ' + esc(m.nick) : '') + '</span>' + icon('zoom') + '</span>' +
+      '<img src="' + esc(item.src) + '" alt="' + esc(item.alt) + '" width="' + item.w + '" height="' + item.h + '"' + (lazy ? ' loading="lazy"' : '') + ' decoding="async">' +
+      '<span class="work__cap"><span>' + esc(item.style) + (m ? ' / ' + esc(m.nick || m.name) : '') + '</span>' + icon('zoom') + '</span>' +
       '</button>';
   }
 
   function renderWorks(mount, limit) {
     var items = GALLERY.slice(0, limit || GALLERY.length);
     mount.innerHTML = items.map(function (it, i) { return workHTML(it, i, true); }).join('');
+    if (mount.__bound) return;
+    mount.__bound = true;
     mount.addEventListener('click', function (e) {
       var btn = e.target.closest('.work');
       if (btn) openLightbox(parseInt(btn.getAttribute('data-index'), 10));
@@ -303,7 +277,7 @@
 
   function photoHTML(m, lazy) {
     if (m.photo) {
-      return '<div class="master__photo ' + m.photoClass + '"><img src="' + m.photo + '" alt="' + esc(m.name + ', майстер ' + m.style) + '" width="600" height="800"' + (lazy ? ' loading="lazy"' : '') + ' decoding="async"></div>';
+      return '<div class="master__photo ' + m.photoClass + '"><img src="' + esc(m.photo) + '" alt="' + esc(m.name + ', майстер ' + m.style) + '" width="600" height="800"' + (lazy ? ' loading="lazy"' : '') + ' decoding="async"></div>';
     }
     return '<div class="master__photo"><div class="master__silhouette" role="img" aria-label="' + esc('Фото майстра ' + m.name + ' скоро буде') + '">' +
       '<span>Фото скоро</span><svg viewBox="0 0 200 220" aria-hidden="true"><use href="#i-bust"></use></svg></div></div>';
@@ -311,9 +285,9 @@
 
   function renderMastersPreview(mount, limit) {
     mount.innerHTML = MASTERS.slice(0, limit).map(function (m) {
-      return '<a class="master" href="masters.html#' + m.slug + '" data-reveal="up">' +
+      return '<a class="master" href="masters.html#' + encodeURIComponent(m.slug) + '" data-reveal="up">' +
         photoHTML(m, true) +
-        '<h3 class="master__name">' + esc(m.name) + ' <span class="master__nick">«' + esc(m.nick) + '»</span></h3>' +
+        '<h3 class="master__name">' + esc(m.name) + (m.nick ? ' <span class="master__nick">«' + esc(m.nick) + '»</span>' : '') + '</h3>' +
         '<p class="master__style">' + esc(m.style) + '</p>' +
         '</a>';
     }).join('');
@@ -321,18 +295,97 @@
 
   function renderMastersFull(mount) {
     mount.innerHTML = MASTERS.map(function (m, i) {
-      return '<article class="master-card" id="' + m.slug + '" data-reveal="' + (i % 2 ? 'right' : 'left') + '">' +
+      return '<article class="master-card" id="' + esc(m.slug) + '" data-reveal="' + (i % 2 ? 'right' : 'left') + '">' +
         photoHTML(m, i > 1) +
         '<div class="master-card__body">' +
         '<span class="master-card__num">' + String(i + 1).padStart(2, '0') + ' / ' + String(MASTERS.length).padStart(2, '0') + '</span>' +
-        '<h2>' + esc(m.name) + '<span class="master__nick">«' + esc(m.nick) + '»</span></h2>' +
+        '<h2>' + esc(m.name) + (m.nick ? '<span class="master__nick">«' + esc(m.nick) + '»</span>' : '') + '</h2>' +
         '<div class="master-card__tags">' + m.tags.map(function (t, k) { return '<span class="tag' + (k === 0 ? ' tag--red' : '') + '">' + esc(t) + '</span>'; }).join('') + '</div>' +
-        '<p>' + m.about + '</p>' +
+        '<p>' + esc(m.about) + '</p>' +
         '<dl class="master-card__facts"><div><dt>Досвід</dt><dd>' + m.exp + NB + plural(m.exp, 'рік', 'роки', 'років') + '</dd></div>' +
-        '<div><dt>Вартість</dt><dd>' + m.price + '</dd></div></dl>' +
-        '<a class="btn" href="booking.html?master=' + m.slug + '"><span class="btn__fill"></span><span class="btn__label">Записатися до' + NB + 'майстра</span>' + icon('arrow') + '</a>' +
+        (m.price ? '<div><dt>Вартість</dt><dd>' + esc(m.price) + '</dd></div>' : '') + '</dl>' +
+        '<a class="btn" href="booking.html?master=' + encodeURIComponent(m.slug) + '"><span class="btn__fill"></span><span class="btn__label">Записатися до' + NB + 'майстра</span>' + icon('arrow') + '</a>' +
         '</div></article>';
     }).join('');
+  }
+
+  /* ---------- reviews (home) ---------- */
+  function renderReviews(mount) {
+    var limit = parseInt(mount.getAttribute('data-limit') || '3', 10);
+    mount.innerHTML = REVIEWS.slice(0, limit).map(function (r) {
+      return '<figure class="review" data-reveal="up">' +
+        '<svg class="review__mark" aria-hidden="true"><use href="#i-quote"></use></svg>' +
+        '<blockquote><p>' + esc(r.text) + '</p></blockquote>' +
+        '<figcaption><strong>' + esc(r.author) + '</strong>' + (r.caption ? ' / ' + esc(r.caption) : '') + '</figcaption>' +
+        '</figure>';
+    }).join('');
+    mount.hidden = !REVIEWS.length;
+  }
+
+  /* ---------- contacts: header phone, footer, map, JSON-LD ---------- */
+  function setText(sel, text) { $$(sel).forEach(function (el) { el.textContent = text || ''; el.hidden = !text; }); }
+  function renderInfo() {
+    var addr = [INFO.address, INFO.city].filter(Boolean).join(', ');
+    var mapQ = INFO.map_query || addr;
+    $$('[data-info-tel]').forEach(function (a) { a.href = phoneHref(INFO.phone); });
+    $$('[data-info="address"]').forEach(function (a) {
+      a.textContent = addr;
+      a.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapQ);
+    });
+    $$('[data-info="phone"]').forEach(function (a) { a.textContent = INFO.phone || ''; a.href = phoneHref(INFO.phone); });
+    setText('[data-info="address_note"]', INFO.address_note);
+    setText('[data-info="phone_note"]', INFO.phone_note);
+    setText('[data-info="hours"]', INFO.hours);
+    setText('[data-info="hours_note"]', INFO.hours_note);
+    ['instagram', 'telegram'].forEach(function (k) {
+      $$('[data-info="' + k + '"]').forEach(function (a) { if (INFO[k]) a.href = INFO[k]; a.hidden = !INFO[k]; });
+    });
+    $$('[data-info="map"]').forEach(function (f) {
+      var src = 'https://www.google.com/maps/embed?origin=mfe&pb=!1m3!2m1!1s' + encodeURIComponent(mapQ).replace(/%20/g, '+') + '!6i16';
+      if (f.getAttribute('src') !== src) f.setAttribute('src', src);
+      f.title = 'Карта: Tattoo House, ' + addr;
+    });
+    var ld = $('#ld-json');
+    if (ld) {
+      try {
+        var j = JSON.parse(ld.textContent);
+        j.telephone = '+' + String(INFO.phone || '').replace(/\D/g, '');
+        j.address = { '@type': 'PostalAddress', streetAddress: INFO.address, addressLocality: INFO.city, addressCountry: 'UA' };
+        if (INFO.opening_hours) j.openingHours = INFO.opening_hours;
+        j.sameAs = [INFO.instagram, INFO.telegram].filter(Boolean);
+        ld.textContent = JSON.stringify(j);
+      } catch (e) { /* лишаємо статичний блок */ }
+    }
+  }
+
+  /* ---------- merits: counters + rotating ring (home) ---------- */
+  var countersStarted = false;
+  function renderStats() {
+    var st = INFO.stats || {};
+    $$('[data-stat]').forEach(function (el) {
+      var v = Number(st[el.getAttribute('data-stat')]);
+      if (!isFinite(v)) return;
+      el.setAttribute('data-count', String(v));
+      if (countersStarted || reduceMotion) {
+        var out = $('.js-count', el) || el;
+        var dec = parseInt(el.getAttribute('data-decimals') || '0', 10);
+        out.textContent = dec ? v.toFixed(dec) : num(v);
+      }
+    });
+    var ring = $('#ring-text');
+    if (ring) {
+      var y = Number(st.years) || 0, c = Number(st.clients) || 0, n = MASTERS.length;
+      ring.textContent = [
+        y + ' ' + plural(y, 'РІК', 'РОКИ', 'РОКІВ') + ' ДОСВІДУ',
+        c + '+ ' + plural(c, 'КЛІЄНТ', 'КЛІЄНТИ', 'КЛІЄНТІВ'),
+        st.rating + ' У GOOGLE',
+        'САЛОН РОКУ ЛЬВІВ 2025',
+        n + ' ' + plural(n, 'МАЙСТЕР', 'МАЙСТРИ', 'МАЙСТРІВ')
+      ].join(' / ') + ' /';
+      var sr = $('#ring-sr');
+      if (sr) sr.textContent = y + ' ' + plural(y, 'рік', 'роки', 'років') + ' досвіду, понад ' + c + ' клієнтів, рейтинг ' + st.rating +
+        ' у Google, салон року Львів 2025, ' + n + ' ' + plural(n, 'майстер', 'майстри', 'майстрів') + '.';
+    }
   }
 
   function plural(n, one, few, many) {
@@ -364,7 +417,7 @@
       var it = GALLERY[cur], m = masterBySlug(it.master);
       img.classList.remove('lightbox__img'); void img.offsetWidth; img.classList.add('lightbox__img');
       img.src = it.src; img.alt = it.alt; img.width = it.w; img.height = it.h;
-      cap.textContent = it.alt + (m ? ' / майстер ' + m.name + ' «' + m.nick + '»' : '');
+      cap.textContent = it.alt + (m ? ' / майстер ' + m.name + (m.nick ? ' «' + m.nick + '»' : '') : '');
       count.textContent = (cur + 1) + ' / ' + GALLERY.length;
     }
     $('.lightbox__nav--prev', el).addEventListener('click', function () { show(cur - 1); });
@@ -388,20 +441,52 @@
   /* =========================================================
      GIVEAWAY (home)
      ========================================================= */
+  var HP_FIELD = '<div class="hp" aria-hidden="true"><label>Не заповнюйте це поле<input type="text" name="company" tabindex="-1" autocomplete="off"></label></div>';
+  function hpValue(root) { var i = $('input[name="company"]', root); return i ? i.value : ''; }
+
+  // Тексти розіграшу з даних (приз, коли оголосимо, вимкнено)
+  function renderGiveawayTexts() {
+    var root = $('#giveaway');
+    if (!root) return;
+    root.hidden = GIVEAWAY.enabled === false;
+    $$('[data-gw="prize"]', root).forEach(function (el) { el.textContent = GIVEAWAY.prize || ''; });
+    $$('[data-gw="announce"]', root).forEach(function (el) { el.textContent = GIVEAWAY.announce || ''; });
+  }
+
   function initGiveaway() {
     var root = $('#giveaway');
     if (!root) return;
+    renderGiveawayTexts();
     var cells = { d: $('[data-t="d"]', root), h: $('[data-t="h"]', root), m: $('[data-t="m"]', root), s: $('[data-t="s"]', root) };
     var btn = $('#giveaway-btn'), status = $('#giveaway-status');
     var pad = function (n) { return String(n).padStart(2, '0'); };
     var timerId;
+    var saved = store.get('th-giveaway', null);
+
+    // Що показати під кнопкою: переможець > завершено > ви вже в грі > примітка до призу
+    function renderStatus() {
+      var w = GIVEAWAY.winner;
+      var ended = GIVEAWAY_END - new Date() <= 0;
+      status.classList.toggle('is-joined', !!saved && !w && !ended);
+      btn.hidden = !!w || ended;
+      if (w && w.name) status.textContent = 'Переможець: ' + w.name + (w.contact_masked ? ' (' + w.contact_masked + ')' : '') + '. Вітаємо!';
+      else if (ended) status.textContent = 'Розіграш завершено. Переможця оголосимо в Instagram.';
+      else if (saved) status.textContent = 'Ви вже берете участь як ' + saved.name + '. Удачі!';
+      else status.textContent = GIVEAWAY.prize_note || '';
+    }
+    initGiveaway.refresh = function () {
+      renderGiveawayTexts();
+      GIVEAWAY_END = new Date(GIVEAWAY.ends_at || 0);
+      tick();
+      renderStatus();
+    };
+
     function tick() {
       var diff = GIVEAWAY_END - new Date();
       if (diff <= 0) {
         clearInterval(timerId);
         Object.keys(cells).forEach(function (k) { cells[k].textContent = '00'; });
-        btn.hidden = true;
-        status.textContent = 'Розіграш завершено. Переможця оголосимо в Instagram.';
+        renderStatus();
         return;
       }
       var s = Math.floor(diff / 1000);
@@ -412,50 +497,78 @@
     }
     tick();
     timerId = setInterval(tick, 1000);
+    renderStatus();
 
-    function markJoined(entry) {
-      status.textContent = 'Ви вже берете участь як ' + entry.name + '. Удачі!';
-      status.classList.add('is-joined');
-    }
-    var saved = store.get('th-giveaway', null);
-    if (saved) markJoined(saved);
+    var ERR = {
+      bad_name: ['name', 'Вкажіть ім’я, хоча б 2 літери'],
+      bad_contact: ['contact', 'Потрібен телефон (+380...) або нік в Instagram (@nickname)'],
+      closed: [null, 'Розіграш уже завершено.'],
+      too_many: [null, 'Забагато заявок за хвилину. Спробуйте трохи пізніше.'],
+      network: [null, 'Немає зв’язку. Перевірте інтернет і спробуйте ще раз.']
+    };
 
     btn.addEventListener('click', function () {
+      var live = window.TH && TH.mode === 'live';
       var el = document.createElement('div');
       el.className = 'overlay';
       el.innerHTML =
         '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="gw-title">' +
         '<button type="button" class="modal__close" data-close aria-label="Закрити">' + icon('close') + '</button>' +
         '<div class="gw-body">' +
-        '<p class="label">Розіграш</p><h2 id="gw-title">Сертифікат на' + NB + '5' + NB + '000' + NB + '₴</h2>' +
+        '<p class="label">Розіграш</p><h2 id="gw-title">Сертифікат на' + NB + esc(GIVEAWAY.prize || '') + '</h2>' +
         '<form class="form" novalidate>' +
         field('gw-name', 'Ваше ім’я', 'text', 'Наприклад, Олена', 'name') +
         field('gw-contact', 'Телефон або Instagram', 'text', '+380 67 123 45 67 або @nickname', 'tel') +
+        HP_FIELD +
+        '<p class="step__error" role="alert" id="gw-error"></p>' +
         '<button type="submit" class="btn btn--block"><span class="btn__fill"></span><span class="btn__label">Взяти участь у' + NB + 'розіграші</span></button>' +
-        '<p class="reassure">Дані лишаються тільки у' + NB + 'вашому браузері: це демо-сайт.</p>' +
+        '<p class="reassure">' + (live ? 'Ім’я та' + NB + 'контакт бачить лише адміністратор салону.' : 'Дані лишаються тільки у' + NB + 'вашому браузері: це демо-сайт.') + '</p>' +
         '</form></div></div>';
-      var close = openOverlay(el);
+      openOverlay(el);
       var form = $('form', el);
+      var submit = $('button[type="submit"]', form);
+      var formErr = $('#gw-error', el);
       if (saved) { $('#gw-name', el).value = saved.name; $('#gw-contact', el).value = saved.contact; }
+
+      function success(already) {
+        renderStatus();
+        $('.gw-body', el).innerHTML =
+          '<div class="success" role="status">' + stampSVG() +
+          '<p class="success__title">' + (already ? 'Ви вже в' + NB + 'грі' : 'Ви в' + NB + 'грі!') + '</p>' +
+          '<p class="text">' + (already ? 'Цей контакт уже зареєстрований у' + NB + 'розіграші. ' : '') +
+          'Переможця оберемо ' + esc(GIVEAWAY.announce || '') + ' наживо в' + NB + 'Instagram. Слідкуйте за' + NB + 'сторіс.</p>' +
+          '<button type="button" class="btn btn--ghost" data-close><span class="btn__fill"></span><span class="btn__label">Повернутися на' + NB + 'сайт</span></button></div>';
+        var b = $('[data-close]', el); if (b) b.focus();
+      }
+
       form.addEventListener('submit', function (e) {
         e.preventDefault();
+        if (submit.disabled) return;
         var name = $('#gw-name', el).value.trim();
         var contact = $('#gw-contact', el).value.trim();
         var ok = true;
+        formErr.textContent = '';
         ok = setFieldError($('#gw-name', el), name.length >= 2 ? '' : 'Вкажіть ім’я, хоча б 2 літери') && ok;
         ok = setFieldError($('#gw-contact', el), validPhone(contact) || validInsta(contact) ? '' : 'Потрібен телефон (+380...) або нік в Instagram (@nickname)') && ok;
         if (!ok) return;
-        saved = { name: name, contact: contact, at: new Date().toISOString() };
-        store.set('th-giveaway', saved);
-        markJoined(saved);
-        $('.gw-body', el).innerHTML =
-          '<div class="success" role="status">' + stampSVG() +
-          '<p class="success__title">Ви в' + NB + 'грі!</p>' +
-          '<p class="text">Переможця оберемо 31' + NB + 'грудня наживо в' + NB + 'Instagram. Слідкуйте за' + NB + 'сторіс.</p>' +
-          '<button type="button" class="btn btn--ghost" data-close><span class="btn__fill"></span><span class="btn__label">Повернутися на' + NB + 'сайт</span></button></div>';
-        var b = $('[data-close]', el); if (b) b.focus();
+        var entry = { name: name, contact: contact, at: new Date().toISOString() };
+        if (!live) {
+          saved = entry; store.set('th-giveaway', saved); success(false);
+          return;
+        }
+        submit.disabled = true;
+        $('.btn__label', submit).textContent = 'Надсилаємо…';
+        TH.joinGiveaway({ name: name, contact: contact, hp: hpValue(form) }).then(function (res) {
+          saved = entry; store.set('th-giveaway', saved);
+          success(res === 'already');
+        }, function (err) {
+          submit.disabled = false;
+          $('.btn__label', submit).textContent = 'Взяти участь у' + NB + 'розіграші';
+          var m = ERR[err.code] || [null, 'Не вдалося надіслати заявку. Спробуйте ще раз.'];
+          if (m[0]) setFieldError($('#gw-' + m[0], el), m[1]);
+          else formErr.textContent = m[1];
+        });
       });
-      void close;
     });
   }
 
@@ -520,11 +633,11 @@
       var rows = [];
       state.services.forEach(function (id) {
         var s = SERVICES.filter(function (x) { return x.id === id; })[0];
-        rows.push('<div class="receipt__row" data-key="s-' + id + '"><span>' + s.name + '</span><span>від ' + price(s.price) + '</span></div>');
+        if (s) rows.push('<div class="receipt__row" data-key="s-' + esc(id) + '"><span>' + esc(s.name) + '</span><span>від ' + price(s.price) + '</span></div>');
       });
-      var m = state.master === 'any' ? { name: 'Будь-який вільний', nick: '' } : masterBySlug(state.master);
+      var m = state.master === 'any' ? { name: 'Будь-який вільний', nick: '' } : state.master ? masterBySlug(state.master) : null;
       var html =
-        '<div class="receipt__head"><p class="receipt__brand">Tattoo House</p><p>вул. Городоцька, 47, Львів</p><p>ЧЕК ПОПЕРЕДНЬОГО ЗАПИСУ</p></div>' +
+        '<div class="receipt__head"><p class="receipt__brand">Tattoo House</p><p>' + esc([INFO.address, INFO.city].filter(Boolean).join(', ')) + '</p><p>ЧЕК ПОПЕРЕДНЬОГО ЗАПИСУ</p></div>' +
         '<hr class="receipt__sep">' +
         '<p class="receipt__label">Послуги</p>' +
         (rows.length ? rows.join('') : '<p class="receipt__empty">Ще нічого не обрано</p>') +
@@ -574,9 +687,9 @@
     function step1() {
       return '<div class="step__head"><p class="label">Крок 1 / 4</p><h2>Що робимо?</h2><p class="text">Можна обрати кілька послуг: наприклад, ескіз і' + NB + 'тату.</p></div>' +
         '<div class="options" role="group" aria-label="Послуги">' + SERVICES.map(function (s) {
-          return '<label class="option"><input type="checkbox" name="service" value="' + s.id + '"' + (state.services.indexOf(s.id) > -1 ? ' checked' : '') + '>' +
+          return '<label class="option"><input type="checkbox" name="service" value="' + esc(s.id) + '"' + (state.services.indexOf(s.id) > -1 ? ' checked' : '') + '>' +
             '<span class="option__box">' + icon(s.icon, 'option__icon') +
-            '<span><span class="option__title">' + s.name + '</span><span class="option__sub">від ' + price(s.price) + s.unit + '</span></span>' +
+            '<span><span class="option__title">' + esc(s.name) + '</span><span class="option__sub">від ' + price(s.price) + esc(s.unit) + '</span></span>' +
             '<span class="option__mark" aria-hidden="true"></span></span></label>';
         }).join('') + '</div>' + navHTML(false, 'Обрати майстра');
     }
@@ -587,15 +700,16 @@
         '<span class="option__mark" aria-hidden="true"></span></span></label>';
       return '<div class="step__head"><p class="label">Крок 2 / 4</p><h2>До кого записуємось?</h2></div>' +
         '<div class="options" role="radiogroup" aria-label="Майстри">' + any + MASTERS.map(function (m) {
-          var thumb = m.photo ? '<img class="option__thumb" src="' + m.photo + '" alt="" width="44" height="56" loading="lazy">' : '<span class="option__thumb option__thumb--empty">' + icon('skull') + '</span>';
-          return '<label class="option"><input type="radio" name="master" value="' + m.slug + '"' + (state.master === m.slug ? ' checked' : '') + '>' +
+          var thumb = m.photo ? '<img class="option__thumb" src="' + esc(m.photo) + '" alt="" width="44" height="56" loading="lazy">' : '<span class="option__thumb option__thumb--empty">' + icon('skull') + '</span>';
+          return '<label class="option"><input type="radio" name="master" value="' + esc(m.slug) + '"' + (state.master === m.slug ? ' checked' : '') + '>' +
             '<span class="option__box">' + thumb +
-            '<span><span class="option__title">' + esc(m.name) + ' «' + esc(m.nick) + '»</span><span class="option__sub">' + esc(m.style) + ' / ' + m.price + '</span></span>' +
+            '<span><span class="option__title">' + esc(m.name) + nickq(m) + '</span><span class="option__sub">' + [esc(m.style), esc(m.price)].filter(Boolean).join(' / ') + '</span></span>' +
             '<span class="option__mark" aria-hidden="true"></span></span></label>';
         }).join('') + '</div>' + navHTML(true, 'Обрати дату');
     }
     function step3() {
-      return '<div class="step__head"><p class="label">Крок 3 / 4</p><h2>Коли вам зручно?</h2><p class="text">Працюємо з' + NB + 'вівторка по' + NB + 'неділю, 11:00–21:00. Сеанс починається в' + NB + 'обраний час.</p></div>' +
+      var hours = [INFO.hours, INFO.hours_note].filter(Boolean).map(esc).join('. ');
+      return '<div class="step__head"><p class="label">Крок 3 / 4</p><h2>Коли вам зручно?</h2><p class="text">' + (hours ? hours + '. ' : '') + 'Сеанс починається в' + NB + 'обраний час.</p></div>' +
         '<p class="sr-only" id="cal-live" aria-live="polite"></p><div class="calendar"><div class="cal" id="cal"></div><div class="slots" id="slots"></div></div>' + navHTML(true, 'Залишити контакти');
     }
     function step4() {
@@ -606,7 +720,7 @@
         '<div class="field"><label class="field__label" for="bk-comment">Коментар (необов’язково)</label>' +
         '<textarea class="field__input" id="bk-comment" name="bk-comment" placeholder="Ідея, розмір, місце на тілі, референси"></textarea></div>' +
         '<div class="field"><label class="check"><input type="checkbox" id="bk-agree"><span>Мені є 18 років, я погоджуюсь на обробку даних для зв’язку щодо запису.</span></label>' +
-        '<p class="field__error" id="bk-agree-err" aria-live="polite"></p></div>' +
+        '<p class="field__error" id="bk-agree-err" aria-live="polite"></p></div>' + HP_FIELD +
         '</form>' + navHTML(true, 'Підтвердити запис');
     }
 
@@ -776,19 +890,61 @@
       if (window.scrollY > top) window.scrollTo({ top: top, behavior: reduceMotion ? 'auto' : 'smooth' });
     }
 
+    var BOOK_ERR = {
+      bad_name: [4, 'Вкажіть ім’я, хоча б 2 літери', 'bk-name'],
+      bad_phone: [4, 'Потрібен номер у форматі +380 XX XXX XX XX', 'bk-phone'],
+      bad_comment: [4, 'Коментар задовгий: до 1000 символів.'],
+      bad_date: [3, 'Цей день уже недоступний. Оберіть інший.'],
+      bad_time: [3, 'Цей час уже недоступний. Оберіть інший.'],
+      bad_services: [1, 'Список послуг щойно змінився. Оновіть сторінку й оберіть ще раз.'],
+      bad_master: [2, 'Цей майстер зараз не приймає запис. Оберіть іншого.'],
+      too_many: [4, 'З цього номера вже є кілька нових записів. Адміністратор зателефонує найближчим часом.'],
+      network: [4, 'Немає зв’язку. Перевірте інтернет і натисніть ще раз: дані збережені.']
+    };
+    var sending = false;
+
     function confirm() {
-      var id = 'TH-' + String(Math.floor(10000 + Math.random() * 89999));
-      var list = store.get('th-bookings', []);
-      list.push({ id: id, services: state.services, master: state.master, date: state.date, time: state.time, name: state.name, phone: state.phone, comment: state.comment, total: total(), at: new Date().toISOString() });
-      store.set('th-bookings', list);
+      if (sending) return;
+      var live = window.TH && TH.mode === 'live';
+      if (!live) { showConfirmed('TH-' + String(Math.floor(10000 + Math.random() * 89999)), true); return; }
+      var btn = $('[data-next]', stage);
+      var label = btn && $('.btn__label', btn);
+      sending = true;
+      if (btn) { btn.disabled = true; label.textContent = 'Надсилаємо…'; }
+      TH.createBooking({
+        services: state.services, master: state.master, date: state.date, time: state.time,
+        name: state.name, phone: state.phone, comment: state.comment, hp: hpValue(stage)
+      }).then(function (res) {
+        sending = false;
+        showConfirmed(res && res.code ? res.code : '', false);
+      }, function (err) {
+        sending = false;
+        if (btn) { btn.disabled = false; label.textContent = 'Підтвердити запис'; }
+        var e = BOOK_ERR[err.code] || [4, 'Не вдалося надіслати запис. Спробуйте ще раз або зателефонуйте нам.'];
+        if (e[0] !== 4) {
+          if (e[0] === 3) state.time = null;
+          go(e[0]); stepError(e[1]); renderReceipt();
+          return;
+        }
+        if (e[2]) setFieldError($('#' + e[2], stage), e[1]);
+        stepError(e[1]);
+      });
+    }
+
+    function showConfirmed(id, demo) {
+      if (demo) {
+        var list = store.get('th-bookings', []);
+        list.push({ id: id, services: state.services, master: state.master, date: state.date, time: state.time, name: state.name, phone: state.phone, comment: state.comment, total: total(), at: new Date().toISOString() });
+        store.set('th-bookings', list);
+      }
       state.step = 5; renderProgress();
       progress.forEach(function (b) { b.classList.add('is-done'); b.classList.remove('is-current'); });
       var m = state.master === 'any' ? null : masterBySlug(state.master);
       stage.innerHTML = '<div class="step confirm" role="status">' + stampSVG() +
         '<p class="success__title">Запис підтверджено</p>' +
-        '<p class="confirm__num">Номер запису: ' + id + '</p>' +
-        '<p class="text">' + esc(state.name) + ', чекаємо вас ' + niceDate(state.date) + ' о' + NB + state.time + (m ? ' у' + NB + 'майстра ' + esc(m.name) + ' «' + esc(m.nick) + '»' : '') + '. Адміністратор зателефонує напередодні, щоб підтвердити деталі.</p>' +
-        '<p class="reassure">Демо-сайт: запис зберігся лише у' + NB + 'вашому браузері, нікуди не' + NB + 'надсилався.</p>' +
+        (id ? '<p class="confirm__num">Номер запису: ' + esc(id) + '</p>' : '') +
+        '<p class="text">' + esc(state.name) + ', чекаємо вас ' + niceDate(state.date) + ' о' + NB + state.time + (m ? ' у' + NB + 'майстра ' + esc(m.name) + nickq(m) : '') + '. Адміністратор зателефонує напередодні, щоб підтвердити деталі.</p>' +
+        (demo ? '<p class="reassure">Демо-сайт: запис зберігся лише у' + NB + 'вашому браузері, нікуди не' + NB + 'надсилався.</p>' : '') +
         '<div class="btn-row"><a class="btn" href="index.html"><span class="btn__fill"></span><span class="btn__label">Повернутися на' + NB + 'головну</span></a>' +
         '<a class="btn btn--ghost" href="gallery.html"><span class="btn__fill"></span><span class="btn__label">Надихнутися роботами</span></a></div></div>';
       var t = $('.success__title', stage); t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true });
@@ -801,29 +957,44 @@
   /* =========================================================
      BOOT
      ========================================================= */
-  document.addEventListener('DOMContentLoaded', function () {
-    injectSprite();
+  function renderData() {
     var m;
     if ((m = $('#services-mount'))) renderServices(m);
     if ((m = $('#works-mount'))) renderWorks(m, parseInt(m.getAttribute('data-limit') || '0', 10) || null);
     if ((m = $('#masters-mount'))) renderMastersPreview(m, parseInt(m.getAttribute('data-limit') || '4', 10));
     if ((m = $('#masters-full'))) renderMastersFull(m);
+    if ((m = $('#reviews-mount'))) renderReviews(m);
     if ((m = $('#gallery-count'))) m.textContent = GALLERY.length;
-    if ((m = $('#gallery-styles'))) m.textContent = GALLERY.map(function (g) { return g.style; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).length;
+    if ((m = $('#gallery-styles'))) m.textContent = GALLERY.map(function (g) { return g.style; }).filter(function (v, i, a) { return v && a.indexOf(v) === i; }).length;
     if ((m = $('#gallery-masters'))) m.textContent = MASTERS.length;
+    renderInfo();
+    renderStats();
+    observeReveals(document);
+  }
 
+  document.addEventListener('DOMContentLoaded', function () {
+    injectSprite();
     initSticker();
     initMenu();
     initTransitions();
-    observeReveals(document);
-    initCounters();
     initFloatCta();
-    initGiveaway();
-    initBooking();
 
-    if (window.location.hash) {
-      var target = document.getElementById(window.location.hash.slice(1));
-      if (target) setTimeout(function () { target.scrollIntoView({ block: 'start' }); }, 60);
-    }
+    var src = window.TH || { load: function () { return Promise.resolve(window.TH_SEED); } };
+    src.load(function onFresh(d) {
+      // свіжіші дані прийшли після показу (адмін щойно щось змінив): перемальовуємо блоки
+      applyData(d);
+      renderData();
+      if (initGiveaway.refresh) initGiveaway.refresh();
+    }).then(function (d) {
+      applyData(d);
+      renderData();
+      initCounters();
+      initGiveaway();
+      initBooking();
+      if (window.location.hash) {
+        var target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+        if (target) setTimeout(function () { target.scrollIntoView({ block: 'start' }); }, 60);
+      }
+    });
   });
 })();

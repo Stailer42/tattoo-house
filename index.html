@@ -20,8 +20,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=Rubik+Dirt&display=swap">
   <link rel="stylesheet" href="style.css">
   <script>document.documentElement.classList.add('js');</script>
+  <!-- config.js: ключі Supabase (генерується, у git немає); без нього сайт працює на стартових даних -->
+  <script src="config.js" defer></script>
+  <script src="lib/seed-data.js" defer></script>
+  <script src="lib/site-data.js" defer></script>
   <script src="script.js" defer></script>
-  <script type="application/ld+json">
+  <script type="application/ld+json" id="ld-json">
   { "@context": "https://schema.org", "@type": "TattooParlor",
     "name": "Tattoo House", "description": "Демо-сайт вигаданого тату-салону",
     "telephone": "+380322474747", "image": "https://stailer42.github.io/tattoo-house/assets/img/og.jpg",
@@ -35,7 +39,7 @@
 
   <header class="site-header">
     <nav class="site-header__bar" aria-label="Головне меню">
-      <a class="header-icon" href="tel:+380322474747" aria-label="Зателефонувати в салон"><svg aria-hidden="true"><use href="#i-phone"></use></svg></a>
+      <a class="header-icon" data-info-tel href="tel:+380322474747" aria-label="Зателефонувати в салон"><svg aria-hidden="true"><use href="#i-phone"></use></svg></a>
       <ul class="nav-list nav-list--left">
         <li><a href="index.html" aria-current="page">Головна</a></li>
         <li><a href="gallery.html">Галерея</a></li>
@@ -91,12 +95,12 @@
             <defs><path id="ring-path" d="M250,250 m-212,0 a212,212 0 1,1 424,0 a212,212 0 1,1 -424,0"/></defs>
             <circle class="ring-line" cx="250" cy="250" r="246"/>
             <circle class="ring-dash" cx="250" cy="250" r="186"/>
-            <text><textPath href="#ring-path" textLength="1326" lengthAdjust="spacing">10 РОКІВ ДОСВІДУ / 5000+ ТАТУЮВАНЬ / 4.9 У GOOGLE / САЛОН РОКУ ЛЬВІВ 2025 / 8 МАЙСТРІВ /</textPath></text>
+            <text><textPath id="ring-text" href="#ring-path" textLength="1326" lengthAdjust="spacing">10 РОКІВ ДОСВІДУ / 5000+ КЛІЄНТІВ / 4.9 У GOOGLE / САЛОН РОКУ ЛЬВІВ 2025 / 8 МАЙСТРІВ /</textPath></text>
           </svg>
           <div class="orbit__img">
             <img src="assets/img/tattoo-circle.jpg" alt="Фірмова ілюстрація Tattoo House: постать у каптурі тримає цербера на ланцюгу" width="900" height="900" fetchpriority="high">
           </div>
-          <p class="sr-only">10 років досвіду, понад 5000 татуювань, рейтинг 4.9 у Google, салон року Львів 2025, 8 майстрів.</p>
+          <p class="sr-only" id="ring-sr">10 років досвіду, понад 5000 клієнтів, рейтинг 4.9 у Google, салон року Львів 2025, 8 майстрів.</p>
         </div>
       </div>
     </section>
@@ -115,26 +119,26 @@
         </div>
 
         <div class="stats" data-stagger>
-          <div class="stat" data-reveal="up" data-count="4.9" data-decimals="1">
+          <div class="stat" data-reveal="up" data-stat="rating" data-count="4.9" data-decimals="1">
             <p class="stat__num"><span class="js-count">4.9</span></p>
             <div class="stars" aria-hidden="true"><svg><use href="#i-star5"></use></svg><svg><use href="#i-star5"></use></svg><svg><use href="#i-star5"></use></svg><svg><use href="#i-star5"></use></svg><svg><use href="#i-star5"></use></svg></div>
             <p class="stat__label">Рейтинг у&nbsp;Google</p>
           </div>
-          <div class="stat" data-reveal="up" data-count="1200">
+          <div class="stat" data-reveal="up" data-stat="reviews" data-count="1200">
             <p class="stat__num"><span class="js-count">1&nbsp;200</span><span class="accent">+</span></p>
             <p class="stat__label">Добрих відгуків</p>
           </div>
-          <div class="stat" data-reveal="up" data-count="5000">
+          <div class="stat" data-reveal="up" data-stat="clients" data-count="5000">
             <p class="stat__num"><span class="js-count">5&nbsp;000</span><span class="accent">+</span></p>
             <p class="stat__label">Задоволених клієнтів</p>
           </div>
-          <div class="stat" data-reveal="up" data-count="10">
+          <div class="stat" data-reveal="up" data-stat="years" data-count="10">
             <p class="stat__num"><span class="js-count">10</span></p>
             <p class="stat__label">Років досвіду</p>
           </div>
         </div>
 
-        <div class="reviews" data-stagger>
+        <div class="reviews" id="reviews-mount" data-limit="3" data-stagger>
           <figure class="review" data-reveal="up">
             <svg class="review__mark" aria-hidden="true"><use href="#i-quote"></use></svg>
             <blockquote><p>Робила перше тату в&nbsp;Соломії. Боялася до&nbsp;тремтіння, а&nbsp;вийшла з&nbsp;посмішкою. Пів року минуло, лінії як&nbsp;у&nbsp;перший день.</p></blockquote>
@@ -221,12 +225,12 @@
       <div class="container">
         <div class="giveaway__intro" data-reveal="left">
           <p class="label">05 / Розіграш</p>
-          <h2 id="giveaway-title">Виграй тату<br>на&nbsp;5&nbsp;000&nbsp;₴</h2>
+          <h2 id="giveaway-title">Виграй тату<br>на&nbsp;<span data-gw="prize">5&nbsp;000&nbsp;₴</span></h2>
           <p class="giveaway__text">Розігруємо сертифікат на&nbsp;будь-яку роботу будь-якого майстра. Переможця обере рандомайзер у&nbsp;прямому ефірі нашого Instagram.</p>
           <ol class="giveaway__rules">
             <li><span>1</span>Залиште ім’я та&nbsp;контакт у&nbsp;формі.</li>
             <li><span>2</span>Підпишіться на&nbsp;наш Instagram.</li>
-            <li><span>3</span>Дивіться ефір 31&nbsp;грудня о&nbsp;20:00.</li>
+            <li><span>3</span><div>Дивіться ефір <b class="gw-plain" data-gw="announce">31&nbsp;грудня о&nbsp;20:00</b>.</div></li>
           </ol>
         </div>
         <div class="giveaway__panel" data-reveal="right">
@@ -273,19 +277,19 @@
       <div>
         <div class="footer-brand"><img src="assets/img/logo.jpg" alt="" width="56" height="56" loading="lazy"><p>Tattoo House</p></div>
         <ul class="footer-list">
-          <li><svg aria-hidden="true"><use href="#i-pin"></use></svg><div><a class="link" href="https://www.google.com/maps/search/?api=1&amp;query=Horodotska+St+47+Lviv" target="_blank" rel="noopener">вул. Городоцька, 47, Львів</a><small>Вхід з&nbsp;вулиці, чорні двері з&nbsp;неоном</small></div></li>
-          <li><svg aria-hidden="true"><use href="#i-phone"></use></svg><div><a class="link" href="tel:+380322474747">+380&nbsp;32&nbsp;247&nbsp;47&nbsp;47</a><small>Дзвінки щодня з&nbsp;11:00</small></div></li>
-          <li><svg aria-hidden="true"><use href="#i-clock"></use></svg><div><p>Вт–Нд: 11:00–21:00</p><small>Понеділок вихідний</small></div></li>
+          <li><svg aria-hidden="true"><use href="#i-pin"></use></svg><div><a class="link" data-info="address" href="https://www.google.com/maps/search/?api=1&amp;query=Horodotska+St+47+Lviv" target="_blank" rel="noopener">вул. Городоцька, 47, Львів</a><small data-info="address_note">Вхід з&nbsp;вулиці, чорні двері з&nbsp;неоном</small></div></li>
+          <li><svg aria-hidden="true"><use href="#i-phone"></use></svg><div><a class="link" data-info="phone" href="tel:+380322474747">+380&nbsp;32&nbsp;247&nbsp;47&nbsp;47</a><small data-info="phone_note">Дзвінки щодня з&nbsp;11:00</small></div></li>
+          <li><svg aria-hidden="true"><use href="#i-clock"></use></svg><div><p data-info="hours">Вт–Нд: 11:00–21:00</p><small data-info="hours_note">Понеділок вихідний</small></div></li>
         </ul>
         <div class="socials">
-          <a href="https://instagram.com/tattoohouse.lviv" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-instagram"></use></svg>Instagram</a>
-          <a href="https://t.me/tattoohouse_lviv" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-telegram"></use></svg>Telegram</a>
+          <a data-info="instagram" href="https://instagram.com/tattoohouse.lviv" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-instagram"></use></svg>Instagram</a>
+          <a data-info="telegram" href="https://t.me/tattoohouse_lviv" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-telegram"></use></svg>Telegram</a>
         </div>
         <p class="copyright">© 2026 Tattoo House. Демо-сайт: салон, майстри, відгуки та&nbsp;контакти вигадані.</p>
       </div>
       <div class="map-frame">
         <span class="map-pin">Ми тут</span>
-        <iframe title="Карта: Tattoo House, вул. Городоцька, 47, Львів" src="https://www.google.com/maps/embed?origin=mfe&amp;pb=!1m3!2m1!1sHorodotska+St+47,+Lviv,+Ukraine!6i16" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <iframe data-info="map" title="Карта: Tattoo House, вул. Городоцька, 47, Львів" src="https://www.google.com/maps/embed?origin=mfe&amp;pb=!1m3!2m1!1sHorodotska+St+47,+Lviv,+Ukraine!6i16" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
     </div>
   </footer>
