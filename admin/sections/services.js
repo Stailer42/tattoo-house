@@ -86,7 +86,7 @@
       }),
       onOpen: (s) => openService(s),
       onToggle: async (s) => {
-        await THDB.put("services", { ...s, visible: !s.visible });
+        await THDB.update("services", s.id, { visible: !s.visible });
         UI.toast(s.visible ? "Послугу сховано з сайту й запису" : "Послуга знову на сайті");
         reload();
       },
@@ -95,7 +95,8 @@
         const i = arr.indexOf(s);
         const j = i + dir;
         [arr[i], arr[j]] = [arr[j], arr[i]];
-        await THDB.putMany("services", arr.map((x, k) => ({ ...x, sort: k + 1 })));
+        // шлемо лише sort і лише для рядків, що зрушили (не затираємо правки з іншої вкладки)
+        await Promise.all(arr.map((x, k) => (x.sort === k + 1 ? null : THDB.update("services", x.id, { sort: k + 1 }))));
         reload();
       },
     });
@@ -186,7 +187,8 @@
       };
       if (isNew) row.sort = data.services.length ? Math.max(...data.services.map((x) => x.sort)) + 1 : 1;
       try {
-        await THDB.put("services", row);
+        if (isNew) await THDB.insert("services", row);
+        else await THDB.put("services", row);
       } catch (err) {
         console.error(err);
         UI.toast("Не вдалося зберегти: " + (err.message || "помилка бази"), "error");

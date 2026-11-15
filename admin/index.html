@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Адмінка: Tattoo House</title>
   <meta name="robots" content="noindex, nofollow">
+  <!-- CSP: скрипти лише свої й supabase-js з jsdelivr (з перевіркою integrity); запити лише до Supabase.
+       localhost:* потрібен для локальної перевірки з моком Supabase (tests/e2e). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co http://localhost:*; connect-src 'self' https://*.supabase.co wss://*.supabase.co http://localhost:*; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="same-origin">
   <meta name="theme-color" content="#0a0a0a">
   <link rel="icon" href="../favicon.png" type="image/png">
@@ -16,7 +19,7 @@
 
   <!-- ключі Supabase: файл генерується з .env або в GitHub Actions, у git його немає -->
   <script src="../config.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous" defer></script>
   <script src="../lib/db-supabase.js" defer></script>
   <!-- адмінка -->
   <script src="typo.js" defer></script>

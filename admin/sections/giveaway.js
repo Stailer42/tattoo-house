@@ -177,16 +177,14 @@
       }
       saveBtn.disabled = true;
       try {
-        // свіжа версія: переможця міг щойно записати сервер
-        const fresh = await THDB.single("giveaway");
-        await THDB.saveSingle("giveaway", {
-          ...fresh,
+        // серверна функція зливає поля й не чіпає переможця (його пише лише draw_giveaway)
+        await THDB.rpc("update_giveaway_settings", { p_patch: {
           enabled: enabled.checked(),
           ends_at: iso,
           prize: T.nbsp(prize.value().trim().replace(/\s+/g, " ")),
           announce: T.nbsp(announce.value().trim().replace(/\s+/g, " ")),
           prize_note: T.nbsp(note.value().trim().replace(/\s+/g, " ")),
-        });
+        } });
       } catch (err) {
         console.error(err);
         UI.toast("Не вдалося зберегти: " + (err.message || "помилка бази"), "error");
@@ -269,7 +267,12 @@
   }
 
   function downloadCsv() {
-    const esc = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+    // CSV-ін'єкція: значення на = + - @ Excel виконає як формулу, тому додаємо апостроф
+    const esc = (v) => {
+      let s = String(v);
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+      return '"' + s.replace(/"/g, '""') + '"';
+    };
     const lines = [["Ім'я", "Контакт", "Дата", "Переможець"].map(esc).join(",")]
       .concat(data.entries.map((e) => [e.name, e.contact, fmtCreated(e.created_at), e.is_winner ? "так" : ""].map(esc).join(",")));
     // BOM, щоб Excel відкрив кирилицю правильно

@@ -378,13 +378,13 @@
       ring.textContent = [
         y + ' ' + plural(y, 'РІК', 'РОКИ', 'РОКІВ') + ' ДОСВІДУ',
         c + '+ ' + plural(c, 'КЛІЄНТ', 'КЛІЄНТИ', 'КЛІЄНТІВ'),
-        st.rating + ' У GOOGLE',
+        st.rating != null ? st.rating + ' У GOOGLE' : null,
         'САЛОН РОКУ ЛЬВІВ 2025',
         n + ' ' + plural(n, 'МАЙСТЕР', 'МАЙСТРИ', 'МАЙСТРІВ')
-      ].join(' / ') + ' /';
+      ].filter(Boolean).join(' / ') + ' /';
       var sr = $('#ring-sr');
-      if (sr) sr.textContent = y + ' ' + plural(y, 'рік', 'роки', 'років') + ' досвіду, понад ' + c + ' клієнтів, рейтинг ' + st.rating +
-        ' у Google, салон року Львів 2025, ' + n + ' ' + plural(n, 'майстер', 'майстри', 'майстрів') + '.';
+      if (sr) sr.textContent = y + ' ' + plural(y, 'рік', 'роки', 'років') + ' досвіду, понад ' + c + ' клієнтів' + (st.rating != null ? ', рейтинг ' + st.rating + ' у Google' : '') +
+        ', салон року Львів 2025, ' + n + ' ' + plural(n, 'майстер', 'майстри', 'майстрів') + '.';
     }
   }
 
@@ -461,7 +461,9 @@
     var btn = $('#giveaway-btn'), status = $('#giveaway-status');
     var pad = function (n) { return String(n).padStart(2, '0'); };
     var timerId;
+    // «Ви вже берете участь» лише для поточного розіграшу: після скидання й нового старту позначка зникає
     var saved = store.get('th-giveaway', null);
+    if (saved && saved.round !== (GIVEAWAY.ends_at || '')) saved = null;
 
     // Що показати під кнопкою: переможець > завершено > ви вже в грі > примітка до призу
     function renderStatus() {
@@ -477,6 +479,10 @@
     initGiveaway.refresh = function () {
       renderGiveawayTexts();
       GIVEAWAY_END = new Date(GIVEAWAY.ends_at || 0);
+      if (saved && saved.round !== (GIVEAWAY.ends_at || '')) saved = null;
+      // розіграш могли продовжити: таймер, що вже зупинився, запускаємо знову
+      clearInterval(timerId);
+      timerId = setInterval(tick, 1000);
       tick();
       renderStatus();
     };
@@ -551,7 +557,7 @@
         ok = setFieldError($('#gw-name', el), name.length >= 2 ? '' : 'Вкажіть ім’я, хоча б 2 літери') && ok;
         ok = setFieldError($('#gw-contact', el), validPhone(contact) || validInsta(contact) ? '' : 'Потрібен телефон (+380...) або нік в Instagram (@nickname)') && ok;
         if (!ok) return;
-        var entry = { name: name, contact: contact, at: new Date().toISOString() };
+        var entry = { name: name, contact: contact, at: new Date().toISOString(), round: GIVEAWAY.ends_at || '' };
         if (!live) {
           saved = entry; store.set('th-giveaway', saved); success(false);
           return;
@@ -898,8 +904,10 @@
       bad_time: [3, 'Цей час уже недоступний. Оберіть інший.'],
       bad_services: [1, 'Список послуг щойно змінився. Оновіть сторінку й оберіть ще раз.'],
       bad_master: [2, 'Цей майстер зараз не приймає запис. Оберіть іншого.'],
-      too_many: [4, 'З цього номера вже є кілька нових записів. Адміністратор зателефонує найближчим часом.'],
-      network: [4, 'Немає зв’язку. Перевірте інтернет і натисніть ще раз: дані збережені.']
+      too_many_phone: [4, 'З цього номера вже є кілька нових записів. Адміністратор зателефонує найближчим часом.'],
+      too_many_global: [4, 'Зараз забагато заявок. Спробуйте за кілька хвилин або зателефонуйте нам.'],
+      code_busy: [4, 'Не вдалося створити номер запису. Натисніть ще раз.'],
+      network: [4, 'Немає зв’язку. Перевірте інтернет і натисніть ще раз: введене не зникне.']
     };
     var sending = false;
 
@@ -922,7 +930,7 @@
         if (btn) { btn.disabled = false; label.textContent = 'Підтвердити запис'; }
         var e = BOOK_ERR[err.code] || [4, 'Не вдалося надіслати запис. Спробуйте ще раз або зателефонуйте нам.'];
         if (e[0] !== 4) {
-          if (e[0] === 3) state.time = null;
+          if (e[0] === 3) { state.time = null; if (err.code === 'bad_date') state.date = null; }
           go(e[0]); stepError(e[1]); renderReceipt();
           return;
         }
@@ -1001,13 +1009,22 @@
       if (initGiveaway.refresh) initGiveaway.refresh();
       if (initBooking.refresh) initBooking.refresh();
     }).then(function (d) {
-      applyData(d);
-      renderData();
+      try {
+        applyData(d);
+        renderData();
+      } catch (e) {
+        // зіпсований кеш або несподівана відповідь бази: показуємо стартові дані, а не порожню сторінку
+        console.warn('Tattoo House: дані не вдалося показати, беру запасні', e);
+        applyData(window.TH && TH.seed ? TH.seed() : window.TH_SEED);
+        renderData();
+      }
       initCounters();
       initGiveaway();
       initBooking();
       if (window.location.hash) {
-        var target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+        var id = window.location.hash.slice(1);
+        try { id = decodeURIComponent(id); } catch (e) { /* кривий хеш: шукаємо як є */ }
+        var target = document.getElementById(id);
         if (target) setTimeout(function () { target.scrollIntoView({ block: 'start' }); }, 60);
       }
     });

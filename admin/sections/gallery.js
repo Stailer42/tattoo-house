@@ -91,7 +91,7 @@
       }),
       onOpen: (g) => openPhoto(g),
       onToggle: async (g) => {
-        await THDB.put("gallery", { ...g, visible: !g.visible });
+        await THDB.update("gallery", g.id, { visible: !g.visible });
         UI.toast(g.visible ? "Фото сховано з сайту" : "Фото знову на сайті");
         reload();
       },
@@ -100,7 +100,8 @@
         const i = arr.indexOf(g);
         const j = i + dir;
         [arr[i], arr[j]] = [arr[j], arr[i]];
-        await THDB.putMany("gallery", arr.map((x, k) => ({ ...x, sort: k + 1 })));
+        // шлемо лише sort і лише для рядків, що зрушили (не затираємо правки з іншої вкладки)
+        await Promise.all(arr.map((x, k) => (x.sort === k + 1 ? null : THDB.update("gallery", x.id, { sort: k + 1 }))));
         reload();
       },
     });
@@ -178,7 +179,7 @@
       for (const it of items) {
         try {
           const src = await THDB.putFile(it.blob, "gallery");
-          await THDB.put("gallery", {
+          await THDB.insert("gallery", {
             id: THDB.newId(),
             src,
             w: it.width,

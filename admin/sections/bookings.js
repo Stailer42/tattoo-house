@@ -36,7 +36,7 @@
       paint();
       clearInterval(timer);
       timer = setInterval(() => {
-        if (!root.isConnected) return clearInterval(timer);
+        if (!root.isConnected || !THAdmin.user) return clearInterval(timer);
         if (!dialogOpen && document.visibilityState === "visible") reload(true);
       }, 60 * 1000);
     },

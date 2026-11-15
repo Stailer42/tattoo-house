@@ -55,7 +55,7 @@
       }),
       onOpen: (r) => openReview(r),
       onToggle: async (r) => {
-        await THDB.put("reviews", { ...r, visible: !r.visible });
+        await THDB.update("reviews", r.id, { visible: !r.visible });
         UI.toast(r.visible ? "Відгук сховано з сайту" : "Відгук знову на сайті");
         reload();
       },
@@ -64,7 +64,8 @@
         const i = arr.indexOf(r);
         const j = i + dir;
         [arr[i], arr[j]] = [arr[j], arr[i]];
-        await THDB.putMany("reviews", arr.map((x, k) => ({ ...x, sort: k + 1 })));
+        // шлемо лише sort і лише для рядків, що зрушили (не затираємо правки з іншої вкладки)
+        await Promise.all(arr.map((x, k) => (x.sort === k + 1 ? null : THDB.update("reviews", x.id, { sort: k + 1 }))));
         reload();
       },
     });
@@ -141,7 +142,8 @@
         row.sort = data.reviews.length ? Math.min(...data.reviews.map((x) => x.sort)) - 1 : 1; // новий першим
       }
       try {
-        await THDB.put("reviews", row);
+        if (isNew) await THDB.insert("reviews", row);
+        else await THDB.put("reviews", row);
       } catch (err) {
         console.error(err);
         UI.toast("Не вдалося зберегти: " + (err.message || "помилка бази"), "error");

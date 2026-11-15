@@ -108,7 +108,10 @@
 
   function showLogin(message) {
     user = null;
+    renderSeq++; // розділ, що ще вантажиться, не має з'явитися після виходу
     $("[data-app]").hidden = true;
+    // телефони клієнтів не повинні лишатися в сторінці після виходу чи кінця сесії
+    $("[data-view]").replaceChildren();
     $("[data-login]").hidden = false;
     $("[data-skip]").setAttribute("href", "#login-main");
     document.title = "Вхід: адмінка Tattoo House";
@@ -299,8 +302,9 @@
   };
 
   async function render(id, focus) {
+    const my = ++renderSeq; // до будь-якого await: пізніший перехід завжди перемагає
     if (!(await Admin.requireUser())) return;
-    const my = ++renderSeq;
+    if (my !== renderSeq) return;
     const s = SECTIONS.find((x) => x.id === id);
     const view = $("[data-view]");
     markActive(id);

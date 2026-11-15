@@ -59,7 +59,7 @@ const delb = await req("DELETE", "/rest/v1/bookings?id=neq.00000000-0000-0000-00
 check("anon НЕ видаляє записи", delb.status >= 400 || (Array.isArray(delb.body) && !delb.body.length) || delb.status === 204, delb.status + "");
 
 // адмінські функції
-for (const fn of ["draw_giveaway", "reset_giveaway", "clear_giveaway_winner"]) {
+for (const fn of ["draw_giveaway", "reset_giveaway", "clear_giveaway_winner", "update_giveaway_settings"]) {
   const r = await req("POST", "/rest/v1/rpc/" + fn, {});
   check("anon НЕ викликає " + fn, r.status >= 400, r.status + " " + JSON.stringify(r.body).slice(0, 80));
 }
@@ -92,6 +92,8 @@ for (const [name, patch, code] of cases) {
   check("create_booking відхиляє: " + name, r.status >= 400 && r.body && r.body.message === code, r.status + " " + (r.body && r.body.message));
 }
 const gw = await req("POST", "/rest/v1/rpc/join_giveaway", { p_name: "Тест", p_contact: "not-a-contact", p_hp: "" });
+const gwLong = await req("POST", "/rest/v1/rpc/join_giveaway", { p_name: "Тест", p_contact: "x".repeat(500) + " 0671234567", p_hp: "" });
+check("join_giveaway відхиляє довгий контакт", gwLong.status >= 400 && ["bad_contact", "closed"].includes(gwLong.body && gwLong.body.message), gwLong.body && gwLong.body.message);
 check("join_giveaway відхиляє поганий контакт", gw.status >= 400 && ["bad_contact", "closed"].includes(gw.body && gw.body.message), gw.body && gw.body.message);
 
 console.log(failed ? `\n${failed} FAIL` : "\nALL OK");

@@ -42,7 +42,9 @@
     return data;
   }
 
-  let cached = null; // { id, login, name }
+  let cached = null; // { id, login, name, checked }
+  // як часто перепитувати таблицю admins (адміна могли прибрати, поки вкладка відкрита)
+  const RECHECK_MS = 5 * 60 * 1000;
 
   function isNetwork(err) {
     return !err || err.status === 0 || /fetch|network|Failed/i.test(err.message || "");
@@ -79,13 +81,21 @@
       }
 
       writeJSON(LOCK_KEY, null);
-      const row = await adminRow(data.user.id).catch(() => null);
+      let row;
+      try {
+        row = await adminRow(data.user.id);
+      } catch (e) {
+        // пароль правильний, але таблицю admins не вдалося прочитати: це мережа, а не «немає доступу»
+        await sb().auth.signOut();
+        cached = null;
+        return { ok: false, reason: "error" };
+      }
       if (!row) {
         await sb().auth.signOut();
         cached = null;
         return { ok: false, reason: "not_admin" };
       }
-      cached = { id: data.user.id, login: data.user.email, name: row.name || "Адміністратор" };
+      cached = { id: data.user.id, login: data.user.email, name: row.name || "Адміністратор", checked: Date.now() };
       return { ok: true, user: cached };
     },
 
@@ -97,7 +107,7 @@
         cached = null;
         return null;
       }
-      if (cached && cached.id === session.user.id) return cached;
+      if (cached && cached.id === session.user.id && Date.now() - cached.checked < RECHECK_MS) return cached;
       let row = null;
       try {
         row = await adminRow(session.user.id);
@@ -111,7 +121,7 @@
         cached = null;
         return null;
       }
-      cached = { id: session.user.id, login: session.user.email, name: row.name || "Адміністратор" };
+      cached = { id: session.user.id, login: session.user.email, name: row.name || "Адміністратор", checked: Date.now() };
       return cached;
     },
 

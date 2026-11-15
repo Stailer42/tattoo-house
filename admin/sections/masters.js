@@ -48,7 +48,7 @@
   function uniqueSlug(name) {
     const first = slugify(name.split(" ")[0]) || "master";
     const full = slugify(name) || first;
-    const taken = new Set(data.masters.map((m) => m.id));
+    const taken = new Set(data.masters.map((m) => m.id).concat(["any"])); // any = «Будь-який вільний» на сайті
     for (const c of [first, full]) if (c.length >= 2 && !taken.has(c)) return c;
     for (let i = 2; i < 100; i++) if (!taken.has(first + "-" + i)) return first + "-" + i;
     return "m-" + Date.now().toString(36);
@@ -89,7 +89,7 @@
       }),
       onOpen: (m) => openMaster(m),
       onToggle: async (m) => {
-        await THDB.put("masters", { ...m, visible: !m.visible });
+        await THDB.update("masters", m.id, { visible: !m.visible });
         UI.toast(m.visible ? m.name + ": сховано з сайту й форми запису" : m.name + ": знову на сайті");
         reload();
       },
@@ -98,7 +98,8 @@
         const i = arr.indexOf(m);
         const j = i + dir;
         [arr[i], arr[j]] = [arr[j], arr[i]];
-        await THDB.putMany("masters", arr.map((x, k) => ({ ...x, sort: k + 1 })));
+        // шлемо лише sort і лише для рядків, що зрушили (не затираємо правки з іншої вкладки)
+        await Promise.all(arr.map((x, k) => (x.sort === k + 1 ? null : THDB.update("masters", x.id, { sort: k + 1 }))));
         reload();
       },
     });
@@ -266,7 +267,8 @@
         const oldPhoto = m.photo;
         if (pending) row.photo = await THDB.putFile(pending.blob, "masters");
         else if (dropPhoto) row.photo = "";
-        await THDB.put("masters", row);
+        if (isNew) await THDB.insert("masters", row);
+        else await THDB.put("masters", row);
         // старий файл у сховищі більше не потрібен (фото з репозиторію не чіпаються)
         if ((pending || dropPhoto) && oldPhoto) await THDB.removeFile(oldPhoto);
       } catch (err) {

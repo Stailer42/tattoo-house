@@ -125,7 +125,10 @@ export async function startMock(port = 8766) {
       const days = (date - kyivToday()) / 864e5;
       if (!(days >= 1 && days <= 60) || date.getUTCDay() === 1) throw rpcErr("bad_date");
       if (!["11:00", "13:00", "15:00", "17:00", "19:00"].includes(a.p_time)) throw rpcErr("bad_time");
-      if (db.bookings.filter((b) => b.phone === phone && b.status === "new").length >= 3) throw rpcErr("too_many");
+      const dup = db.bookings.find((b) => b.phone === phone && b.date === a.p_date && b.time === a.p_time && b.master_id === master_id && b.status === "new" && Date.now() - new Date(b.created_at) < 30 * 60e3);
+      if (dup) return { code: dup.code };
+      if (db.bookings.filter((b) => b.phone === phone && b.status === "new").length >= 3) throw rpcErr("too_many_phone");
+      if (db.bookings.filter((b) => Date.now() - new Date(b.created_at) < 10 * 60e3).length >= 30) throw rpcErr("too_many_global");
       const code = "TH-" + (10000 + Math.floor(Math.random() * 90000));
       db.bookings.push(stamp({
         id: randomUUID(), code, services: svc.map((s) => ({ id: s.id, name: s.name, price: s.price, unit: s.unit })),
@@ -141,16 +144,19 @@ export async function startMock(port = 8766) {
       const name = String(a.p_name || "").trim();
       if (name.length < 2 || name.length > 60) throw rpcErr("bad_name");
       const raw = String(a.p_contact || "").trim();
-      let key;
-      if (/^@[A-Za-z0-9._]{2,30}$/.test(raw)) key = raw.toLowerCase();
+      if (raw.length > 40) throw rpcErr("bad_contact");
+      let key, store;
+      if (/^@[A-Za-z0-9._]{2,30}$/.test(raw)) { key = raw.toLowerCase(); store = raw; }
       else {
+        if (!/^[0-9+()\s-]+$/.test(raw)) throw rpcErr("bad_contact");
         let d = raw.replace(/\D/g, "");
         if (/^0\d{9}$/.test(d)) d = "38" + d;
         if (!/^380\d{9}$/.test(d)) throw rpcErr("bad_contact");
         key = "+" + d;
+        store = "+380 " + d.slice(3, 5) + " " + d.slice(5, 8) + " " + d.slice(8, 10) + " " + d.slice(10, 12);
       }
       if (db.giveaway_entries.some((e) => e.contact_key === key)) return "already";
-      db.giveaway_entries.push(stamp({ id: randomUUID(), name, contact: raw, contact_key: key, is_winner: false }));
+      db.giveaway_entries.push(stamp({ id: randomUUID(), name, contact: store, contact_key: key, is_winner: false }));
       return "ok";
     },
     draw_giveaway(a, user) {
@@ -163,6 +169,13 @@ export async function startMock(port = 8766) {
       const s = db.settings.find((x) => x.id === "giveaway");
       s.data = { ...s.data, winner: { name: w.name.split(" ")[0], contact_masked: mask(w.contact_key), drawn_at: now() } };
       return { id: w.id, name: w.name, contact: w.contact };
+    },
+    update_giveaway_settings(a, user) {
+      if (!isAdmin(user)) throw rpcErr("forbidden");
+      const s = db.settings.find((x) => x.id === "giveaway");
+      const { winner, ...patch } = a.p_patch || {};
+      s.data = { ...s.data, ...patch };
+      return s.data;
     },
     reset_giveaway(a, user) {
       if (!isAdmin(user)) throw rpcErr("forbidden");
@@ -306,6 +319,11 @@ export async function startMock(port = 8766) {
       if (req.method === "POST") {
         const body = json();
         const list = Array.isArray(body) ? body : [body];
+        const upsert = /resolution=merge-duplicates/.test(prefer);
+        if (!upsert && list.some((r) => r.id && db[table].some((x) => x.id === r.id))) {
+          return send(409, { code: "23505", message: 'duplicate key value violates unique constraint "' + table + '_pkey"' });
+        }
+        if (table === "masters" && list.some((r) => r.id === "any")) return send(400, { code: "23514", message: "check constraint masters_id_check" });
         const out = list.map((r) => {
           const i = db[table].findIndex((x) => x.id === r.id);
           if (i > -1) {

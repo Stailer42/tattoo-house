@@ -37,7 +37,9 @@ hits=$(grep_tree 'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}|sb_(publishable|secr
 
 # 3. values from local .env
 if [ -f .env ]; then
-  while IFS='=' read -r k v; do
+  # "|| [ -n "$k" ]": останній рядок без переводу рядка теж перевіряємо; \r прибираємо (CRLF)
+  while IFS='=' read -r k v || [ -n "$k" ]; do
+    k="${k%$'\r'}"; v="${v%$'\r'}"
     case "$k" in ''|\#*) continue ;; esac
     v="${v%\"}"; v="${v#\"}"; v="${v%\'}"; v="${v#\'}"
     [ ${#v} -lt 6 ] && continue

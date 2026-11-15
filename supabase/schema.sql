@@ -44,7 +44,8 @@ create table if not exists services (
 -- ---------- майстри ----------
 -- id = slug (latin): на ньому тримаються посилання booking.html?master=... і masters.html#...
 create table if not exists masters (
-  id         text primary key check (id ~ '^[a-z0-9][a-z0-9-]{1,39}$'),
+  -- 'any' зайнятий: так сайт позначає «Будь-який вільний»
+  id         text primary key check (id ~ '^[a-z0-9][a-z0-9-]{1,39}$' and id <> 'any'),
   name       text not null check (length(name) between 2 and 80),
   nick       text not null default '' check (length(nick) <= 40),
   style      text not null default '' check (length(style) <= 80),
@@ -105,9 +106,9 @@ create table if not exists bookings (
   master_name text not null,
   date        date not null,
   time        text not null,
-  client_name text not null,
-  phone       text not null,
-  comment     text not null default '',
+  client_name text not null check (length(client_name) <= 60),
+  phone       text not null check (length(phone) <= 20),
+  comment     text not null default '' check (length(comment) <= 1000),
   total       int  not null default 0,
   status      text not null default 'new' check (status in ('new', 'confirmed', 'cancelled')),
   admin_note  text not null default '' check (length(admin_note) <= 1000),
@@ -120,8 +121,8 @@ create index if not exists bookings_phone_idx on bookings (phone);
 -- ---------- учасники розіграшу (лише адмін) ----------
 create table if not exists giveaway_entries (
   id          uuid primary key default gen_random_uuid(),
-  name        text not null,
-  contact     text not null,
+  name        text not null check (length(name) <= 60),
+  contact     text not null check (length(contact) <= 40),
   contact_key text not null unique, -- нормалізований контакт: один учасник = один телефон / нік
   is_winner   boolean not null default false,
   created_at  timestamptz not null default now(),
@@ -179,7 +180,9 @@ create policy "лише адмін" on giveaway_entries for all using (is_admin(
 -- =========================================================
 -- Запис із сайту. Ціну, імена й номер рахує сервер, а не сторінка.
 -- Повертає {"code": "TH-12345"}. Помилки (текст exception):
---   bad_name, bad_phone, bad_comment, bad_services, bad_master, bad_date, bad_time, too_many, spam
+--   bad_name, bad_phone, bad_comment, bad_services, bad_master, bad_date, bad_time,
+--   too_many_phone (3 нові записи на номер), too_many_global (30 за 10 хв), spam, code_busy
+-- Повторне надсилання тієї самої заявки (зв'язок обірвався після вставки) повертає той самий код.
 -- =========================================================
 create or replace function create_booking(
   p_services text[], p_master text, p_date date, p_time text,
@@ -232,9 +235,16 @@ begin
   end if;
   if p_time is null or p_time not in ('11:00', '13:00', '15:00', '17:00', '19:00') then raise exception 'bad_time'; end if;
 
+  -- та сама заявка щойно вже прийшла (клієнт натиснув ще раз після обриву зв'язку): віддаємо її код
+  select code into v_code from bookings
+   where phone = v_phone and date = p_date and time = p_time and master_id is not distinct from v_master
+     and status = 'new' and created_at > now() - interval '30 minutes'
+   limit 1;
+  if v_code is not null then return jsonb_build_object('code', v_code); end if;
+
   -- проти спаму: не більше 3 нових записів на один номер і 30 записів за 10 хвилин загалом
-  if (select count(*) from bookings where phone = v_phone and status = 'new') >= 3 then raise exception 'too_many'; end if;
-  if (select count(*) from bookings where created_at > now() - interval '10 minutes') >= 30 then raise exception 'too_many'; end if;
+  if (select count(*) from bookings where phone = v_phone and status = 'new') >= 3 then raise exception 'too_many_phone'; end if;
+  if (select count(*) from bookings where created_at > now() - interval '10 minutes') >= 30 then raise exception 'too_many_global'; end if;
 
   for i in 1..8 loop
     v_code := 'TH-' || (10000 + floor(random() * 90000))::int;
@@ -264,6 +274,7 @@ declare
   v_raw    text := btrim(coalesce(p_contact, ''));
   v_digits text := regexp_replace(coalesce(p_contact, ''), '\D', '', 'g');
   v_key    text;
+  v_store  text;
 begin
   if coalesce(p_hp, '') <> '' then raise exception 'spam'; end if;
   select data into v_cfg from settings where id = 'giveaway';
@@ -275,20 +286,25 @@ begin
     raise exception 'closed';
   end if;
   if length(v_name) < 2 or length(v_name) > 60 then raise exception 'bad_name'; end if;
+  if length(v_raw) > 40 then raise exception 'bad_contact'; end if;
 
   if v_raw ~ '^@[A-Za-z0-9._]{2,30}$' then
     v_key := lower(v_raw);
+    v_store := v_raw;
   else
+    if v_raw !~ '^[0-9+()\s-]+$' then raise exception 'bad_contact'; end if;
     if v_digits ~ '^0\d{9}$' then v_digits := '38' || v_digits; end if;
     if v_digits !~ '^380\d{9}$' then raise exception 'bad_contact'; end if;
     v_key := '+' || v_digits;
+    -- зберігаємо нормалізований номер, а не те, що ввели
+    v_store := '+380 ' || substr(v_digits, 4, 2) || ' ' || substr(v_digits, 6, 3) || ' ' || substr(v_digits, 9, 2) || ' ' || substr(v_digits, 11, 2);
   end if;
 
   if (select count(*) from giveaway_entries where created_at > now() - interval '10 minutes') >= 60 then
     raise exception 'too_many';
   end if;
 
-  insert into giveaway_entries (name, contact, contact_key) values (v_name, v_raw, v_key)
+  insert into giveaway_entries (name, contact, contact_key) values (v_name, v_store, v_key)
   on conflict (contact_key) do nothing;
   return case when found then 'ok' else 'already' end;
 end;
@@ -329,6 +345,21 @@ begin
 end;
 $$;
 
+-- Налаштування розіграшу з адмінки (лише адмін). Поле winner ігнорується:
+-- його пише тільки draw_giveaway, тож паралельний вибір переможця не затреться.
+create or replace function update_giveaway_settings(p_patch jsonb) returns jsonb
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare
+  v_data jsonb;
+begin
+  if not is_admin() then raise exception 'forbidden'; end if;
+  insert into settings (id, data) values ('giveaway', '{}'::jsonb) on conflict (id) do nothing;
+  update settings set data = data || (coalesce(p_patch, '{}'::jsonb) - 'winner'), updated_at = now()
+   where id = 'giveaway' returning data into v_data;
+  return v_data;
+end;
+$$;
+
 -- Скинути розіграш (лише адмін): видалити всіх учасників і переможця
 create or replace function reset_giveaway() returns void
 language plpgsql security definer set search_path = public, pg_temp as $$
@@ -354,11 +385,21 @@ revoke all on function join_giveaway(text, text, text) from public;
 revoke all on function draw_giveaway() from public;
 revoke all on function reset_giveaway() from public;
 revoke all on function clear_giveaway_winner() from public;
+revoke all on function update_giveaway_settings(jsonb) from public;
+revoke all on function mask_contact(text) from public;
+-- Supabase видає anon права на нові функції через default privileges: знімаємо явно (захист у глибину,
+-- усередині функцій і так перевіряється is_admin())
+revoke execute on function draw_giveaway() from anon;
+revoke execute on function reset_giveaway() from anon;
+revoke execute on function clear_giveaway_winner() from anon;
+revoke execute on function update_giveaway_settings(jsonb) from anon;
+revoke execute on function mask_contact(text) from anon;
 grant execute on function create_booking(text[], text, date, text, text, text, text, text) to anon, authenticated;
 grant execute on function join_giveaway(text, text, text) to anon, authenticated;
 grant execute on function draw_giveaway() to authenticated;
 grant execute on function reset_giveaway() to authenticated;
 grant execute on function clear_giveaway_winner() to authenticated;
+grant execute on function update_giveaway_settings(jsonb) to authenticated;
 grant execute on function is_admin() to anon, authenticated;
 
 -- =========================================================
