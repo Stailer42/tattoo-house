@@ -15,3 +15,7 @@ config.js
 __pycache__/
 # editor settings
 .vscode/
+# promo video renders (рендери промо не комітимо)
+promo/out/
+*.mp4
+*.webm

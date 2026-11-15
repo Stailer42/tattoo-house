@@ -1,0 +1,272 @@
+/* =========================================================
+   TATTOO HOUSE PROMO: Reels 1080×1920
+   Токени ті самі, що в ../style.css:
+   Rubik Dirt (display) + Oswald 400/600, #0a0a0a / #f2f2f2 / #d90429,
+   easing cubic-bezier(.22,1,.36,1), гострі кути та фаски.
+   Усі рухи робить promo.js (одна часова шкала), тут лише статика.
+   ========================================================= */
+
+:root {
+  --bg: #0a0a0a;
+  --bg-2: #131313;
+  --bg-3: #1c1c1c;
+  --line: rgba(242, 242, 242, .14);
+  --red: #d90429;
+  --red-hi: #ff1f45;
+  --red-text: #ff3352;
+  --white: #f2f2f2;
+  --grey: #a8a8a8;
+  --f-display: 'Rubik Dirt', 'Oswald', Impact, sans-serif;
+  --f-body: 'Oswald', 'Arial Narrow', sans-serif;
+  --cut: 14px;
+  --chamfer: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+
+  /* геометрія кадру (promo.js читає ті самі числа з CONFIG) */
+  --win-x: 40px;
+  --win-y: 560px;
+  --win-w: 1000px;
+  --bar-h: 46px;
+  --view-h: 625px;      /* 900 × (1000 / 1440) */
+  --k: .694444;          /* масштаб сайту 1440 → 1000 */
+  --fit: 1;              /* масштаб кадру в прев'ю */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: #000;
+  color: var(--white);
+  font-family: var(--f-body);
+  overflow: hidden;
+}
+h1, p { margin: 0; }
+svg { display: block; }
+
+/* ---------- кадр ---------- */
+.viewport { position: fixed; inset: 0 0 56px; overflow: hidden; }
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1080px; height: 1920px;
+  overflow: hidden; isolation: isolate;
+  background: var(--bg);
+  transform: translate(-50%, -50%) scale(var(--fit));
+}
+.is-record .viewport { inset: 0; }
+.is-record .stage { left: 0; top: 0; transform: none; }
+
+/* ---------- фон ---------- */
+.bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.bg__glow {
+  position: absolute; inset: -10%;
+  background:
+    radial-gradient(60% 34% at 50% 46%, rgba(217, 4, 41, .26), transparent 70%),
+    radial-gradient(40% 22% at 12% 92%, rgba(217, 4, 41, .2), transparent 70%),
+    radial-gradient(36% 20% at 92% 8%, rgba(217, 4, 41, .16), transparent 70%);
+}
+.bg__arts, .final__arts { position: absolute; inset: 0; }
+.art { position: absolute; width: var(--size, 140px); height: var(--size, 140px); color: var(--white); opacity: .08; }
+.art--red { color: var(--red); opacity: .3; }
+.art svg { width: 100%; height: 100%; }
+
+/* шипи з сайту (.spikes) по краях кадру */
+.spikes {
+  position: absolute; left: 0; right: 0; height: 26px;
+  background: conic-gradient(from 150deg at 50% 0, var(--red) 0 60deg, transparent 0) 0 0 / 32px 100% repeat-x;
+}
+.spikes--top { top: 0; transform: scaleY(-1); }
+.spikes--bottom { bottom: 0; }
+
+/* ---------- підписи ---------- */
+.cap-slot { position: absolute; left: 70px; right: 70px; z-index: 3; pointer-events: none; }
+.cap-slot--top { top: 220px; height: 300px; }
+.cap-slot--bottom { top: 1262px; height: 220px; }
+.cap {
+  position: absolute; left: 0; right: 0;
+  display: grid; gap: 18px; justify-items: start;
+  opacity: 0;
+}
+.cap-slot--top .cap { bottom: 0; }
+.cap-slot--bottom .cap { top: 0; }
+.cap__label {
+  display: inline-flex; align-items: center; gap: 16px;
+  font-weight: 600; font-size: 26px; line-height: 1; text-transform: uppercase; letter-spacing: .18em;
+  color: var(--red-text);
+}
+.cap__label::before { content: ""; width: 44px; height: 3px; background: currentColor; }
+.cap__big {
+  font-family: var(--f-display); font-weight: 400;
+  font-size: 96px; line-height: .92; letter-spacing: -.01em;
+  text-wrap: balance;
+}
+.cap__big em { font-style: normal; color: var(--red); }
+.cap__small {
+  font-weight: 600; font-size: 46px; line-height: 1.05; text-transform: uppercase; letter-spacing: .04em;
+}
+.cap__small b { color: var(--red-text); font-weight: 600; }
+
+/* ---------- вікно браузера ---------- */
+.win {
+  position: absolute; z-index: 2;
+  left: var(--win-x); top: var(--win-y); width: var(--win-w);
+  background: #161616;
+  box-shadow: 0 0 0 2px rgba(242, 242, 242, .16), 0 40px 90px rgba(0, 0, 0, .8), 0 0 120px rgba(217, 4, 41, .28);
+  transform-origin: 50% 50%;
+}
+.win__bar {
+  display: flex; align-items: center; gap: 22px;
+  height: var(--bar-h); padding: 0 18px;
+  background: #1c1c1c; border-bottom: 1px solid var(--line);
+}
+.win__dots { display: flex; gap: 9px; }
+.win__dots i { width: 13px; height: 13px; border-radius: 50%; background: #3a3a3a; }
+.win__dots i:first-child { background: var(--red); }
+.win__url {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  height: 30px; padding: 0 14px;
+  background: #0d0d0d; color: rgba(242, 242, 242, .75);
+  font-size: 17px; letter-spacing: .02em; white-space: nowrap; overflow: hidden;
+}
+.win__url svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; }
+.win__view { position: relative; width: var(--win-w); height: var(--view-h); overflow: hidden; background: var(--bg); }
+.page {
+  position: absolute; top: 0; left: 0;
+  width: 1440px; height: 900px; border: 0;
+  transform-origin: 0 0; transform: scale(var(--k));
+  background: var(--bg);
+  visibility: hidden;
+  pointer-events: none;   /* hover робить таймлайн, а не миша глядача */
+}
+.page.is-active { visibility: visible; }
+/* «порожнє полотно» на старті: сітка точок, як у Figma */
+.win__grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle, rgba(242, 242, 242, .22) 1.4px, transparent 1.6px) 0 0 / 28px 28px;
+}
+.win__fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.snap {
+  position: absolute; left: 0; top: 0; opacity: 0;
+  border: 3px solid var(--red-hi);
+  box-shadow: 0 0 22px rgba(255, 31, 69, .6), inset 0 0 22px rgba(255, 31, 69, .35);
+}
+.snap::after {
+  content: ""; position: absolute; inset: -3px;
+  border: 2px solid var(--white); opacity: .8;
+  transform: translate(7px, -4px);
+}
+
+/* ---------- каркаси, які тягнуть курсори ---------- */
+.ghosts { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.ghost {
+  position: absolute; left: 0; top: 0; opacity: 0;
+  border: 2px dashed var(--c, var(--red-hi));
+  background: color-mix(in srgb, var(--c, var(--red)) 12%, transparent);
+}
+.ghost__tag {
+  position: absolute; left: -2px; bottom: 100%;
+  padding: 3px 9px 4px;
+  background: var(--c, var(--red)); color: #0a0a0a;
+  font-weight: 600; font-size: 15px; line-height: 1.1; text-transform: uppercase; letter-spacing: .08em;
+  white-space: nowrap;
+}
+.ghost__h { position: absolute; width: 10px; height: 10px; background: var(--white); border: 2px solid var(--c, var(--red)); }
+.ghost__h:nth-child(2) { left: -6px; top: -6px; }
+.ghost__h:nth-child(3) { right: -6px; top: -6px; }
+.ghost__h:nth-child(4) { left: -6px; bottom: -6px; }
+.ghost__h:nth-child(5) { right: -6px; bottom: -6px; }
+
+/* ---------- курсори ---------- */
+.cursors { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.cursor { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform; }
+.cursor__arrow { width: 40px; height: 40px; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .6)); }
+.cursor__arrow path { fill: var(--c); stroke: #0a0a0a; stroke-width: 1.6; stroke-linejoin: round; }
+.cursor__devil { width: 54px; height: 54px; margin: -4px 0 0 -4px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .7)); }
+.cursor__devil img { width: 100%; height: 100%; }
+.cursor__devil img + img { position: absolute; inset: 0; opacity: 0; }
+.cursor.is-hover .cursor__devil img + img { opacity: 1; }
+.cursor__tag {
+  position: absolute; left: 30px; top: 32px;
+  padding: 4px 12px 5px;
+  background: var(--c); color: var(--tc, #0a0a0a);
+  font-weight: 600; font-size: 19px; line-height: 1.1; letter-spacing: .02em;
+  white-space: nowrap;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
+}
+
+.ripples { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.ripple {
+  position: absolute; left: 0; top: 0; width: 70px; height: 70px; margin: -35px 0 0 -35px;
+  border: 3px solid var(--red-hi); border-radius: 50%; opacity: 0;
+}
+
+/* ---------- спалах ---------- */
+.flash { position: absolute; inset: 0; z-index: 8; background: var(--red); opacity: 0; pointer-events: none; mix-blend-mode: normal; }
+
+/* ---------- фінал ---------- */
+.final { position: absolute; inset: 0; z-index: 3; visibility: hidden; }
+.final::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(52% 26% at 50% 27%, rgba(217, 4, 41, .38), transparent 72%);
+}
+.sticker {
+  position: absolute; left: 50%; top: 300px;
+  width: 400px; height: 400px; margin-left: -200px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 10px var(--white), 0 24px 50px rgba(0, 0, 0, .75), 0 0 90px rgba(217, 4, 41, .45);
+  opacity: 0;
+}
+.sticker img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.final__title {
+  position: absolute; left: 50px; right: 50px; top: 790px;
+  font-family: var(--f-display); font-weight: 400;
+  font-size: 128px; line-height: .9; letter-spacing: -.01em; text-align: center;
+  hyphens: none;
+}
+.final__title .w { display: inline-block; opacity: 0; }
+.final__title .w--red { color: var(--red); }
+.final__sub {
+  position: absolute; left: 60px; right: 60px; top: 1085px;
+  font-weight: 600; font-size: 54px; line-height: 1; text-transform: uppercase; letter-spacing: .06em; text-align: center;
+  opacity: 0;
+}
+.final__nick {
+  position: absolute; left: 40px; right: 40px; top: 1165px;
+  font-family: var(--f-display); font-size: 76px; line-height: 1; text-align: center; color: var(--red-hi);
+  text-shadow: 0 0 6px rgba(255, 31, 69, .6), 0 0 26px rgba(217, 4, 41, .45);
+  opacity: 0;
+}
+.final__cta { position: absolute; left: 0; right: 0; top: 1290px; display: flex; justify-content: center; opacity: 0; }
+.final__btn {
+  position: relative; isolation: isolate;
+  display: inline-flex; align-items: center; gap: 18px;
+  height: 112px; padding: 0 64px;
+  font-weight: 600; font-size: 44px; text-transform: uppercase; letter-spacing: .12em; color: #fff;
+  --cut: 22px;
+}
+.final__btn::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--red); clip-path: var(--chamfer); }
+.final__btn svg { width: 44px; height: 44px; }
+.final__sparks { position: absolute; inset: 0; }
+.spark {
+  position: absolute; left: 0; top: 0; width: 6px; height: 40px; margin: -20px 0 0 -3px;
+  background: linear-gradient(var(--red-hi), rgba(255, 31, 69, 0));
+  opacity: 0;
+}
+
+/* ---------- завантаження і повзунок (лише прев'ю) ---------- */
+.loading {
+  position: absolute; left: 0; right: 0; top: 50%; z-index: 9;
+  text-align: center; font-size: 34px; text-transform: uppercase; letter-spacing: .12em; color: var(--grey);
+}
+.is-ready .loading { display: none; }
+.scrub {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  display: flex; align-items: center; gap: 16px; padding: 0 16px;
+  background: #111; border-top: 1px solid var(--line);
+}
+.scrub[hidden] { display: none; }
+.scrub button {
+  min-width: 88px; height: 40px; padding: 0 14px;
+  font: 600 14px/1 var(--f-body); text-transform: uppercase; letter-spacing: .1em;
+  color: #fff; background: var(--red); border: 0; cursor: pointer;
+}
+.scrub input { flex: 1; accent-color: var(--red); }
+.scrub output { min-width: 80px; font-variant-numeric: tabular-nums; }

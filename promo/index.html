@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tattoo House: промо для Reels</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- ті самі шрифти, що на сайті (index.html) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=Rubik+Dirt&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="promo.js" defer></script>
+</head>
+<body>
+  <div class="viewport">
+    <!-- Кадр 1080×1920. У прев'ю масштабується під вікно, у записі 1:1. -->
+    <div class="stage" id="stage">
+      <div class="bg" aria-hidden="true">
+        <div class="bg__glow" id="glow"></div>
+        <div class="bg__arts" id="arts"></div>
+        <div class="spikes spikes--top"></div>
+        <div class="spikes spikes--bottom"></div>
+      </div>
+
+      <div class="cap-slot cap-slot--top" id="cap-top"></div>
+
+      <div class="win" id="win">
+        <div class="win__bar">
+          <span class="win__dots"><i></i><i></i><i></i></span>
+          <span class="win__url">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            <span id="win-url"></span>
+          </span>
+        </div>
+        <div class="win__view" id="view">
+          <iframe class="page" data-page="index" src="../index.html" width="1440" height="900" title="Головна" tabindex="-1"></iframe>
+          <iframe class="page" data-page="gallery" src="../gallery.html" width="1440" height="900" title="Галерея" tabindex="-1"></iframe>
+          <iframe class="page" data-page="booking" src="../booking.html" width="1440" height="900" title="Запис" tabindex="-1"></iframe>
+          <iframe class="page" data-page="masters" src="../masters.html" width="1440" height="900" title="Майстри" tabindex="-1"></iframe>
+          <div class="win__grid" id="canvas-grid"></div>
+          <div class="win__fx" id="fx"></div>
+        </div>
+      </div>
+
+      <div class="cap-slot cap-slot--bottom" id="cap-bottom"></div>
+
+      <div class="final" id="final">
+        <div class="final__arts" id="final-arts"></div>
+        <div class="final__sparks" id="sparks"></div>
+        <div class="sticker" id="sticker"><img src="assets/logo.png" alt="" width="640" height="640"></div>
+        <h1 class="final__title" id="final-title"></h1>
+        <p class="final__sub" id="final-sub"></p>
+        <p class="final__nick" id="final-nick"></p>
+        <div class="final__cta" id="final-cta">
+          <span class="final__btn"><svg aria-hidden="true"><use href="#i-instagram"></use></svg><span id="final-cta-label"></span></span>
+        </div>
+      </div>
+
+      <div class="ghosts" id="ghosts"></div>
+      <div class="cursors" id="cursors"></div>
+      <div class="ripples" id="ripples"></div>
+      <div class="flash" id="flash"></div>
+      <div class="loading" id="loading">Завантажую сторінки сайту…</div>
+    </div>
+  </div>
+
+  <div class="scrub" id="scrub" hidden>
+    <button type="button" id="scrub-play">Пауза</button>
+    <input type="range" id="scrub-range" min="0" max="24" step="0.0333" value="0" aria-label="Час">
+    <output id="scrub-time">0.00 с</output>
+  </div>
+</body>
+</html>
