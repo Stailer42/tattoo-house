@@ -94,6 +94,10 @@ export async function launch() {
   const api = {
     send,
     logs,
+    // підписка на подію CDP (напр. Fetch.requestPaused для підміни відповіді)
+    on(name, fn) {
+      listeners.push((msg) => { if (msg.method === name) fn(msg.params); });
+    },
     async viewport(width, height, mobile = width < 600) {
       await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile });
     },
