@@ -950,6 +950,20 @@
       var t = $('.success__title', stage); t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true });
     }
 
+    // свіжіші дані з бази прийшли, коли форма вже показана: прибираємо зниклі послуги й майстра,
+    // перемальовуємо кроки з цінами й списками (дату, час і контакти не чіпаємо)
+    initBooking.refresh = function () {
+      if (state.step === 5) return;
+      state.services = state.services.filter(function (id) { return SERVICES.some(function (x) { return x.id === id; }); });
+      if (state.master && state.master !== 'any' && !masterBySlug(state.master)) state.master = null;
+      if (state.step <= 2) {
+        stage.removeEventListener('click', onCalClick);
+        stage.innerHTML = '<div class="step">' + [null, step1, step2][state.step]() + '</div>';
+        bindStep();
+      }
+      renderReceipt();
+    };
+
     go(1, true);
     renderReceipt();
   }
@@ -985,6 +999,7 @@
       applyData(d);
       renderData();
       if (initGiveaway.refresh) initGiveaway.refresh();
+      if (initBooking.refresh) initBooking.refresh();
     }).then(function (d) {
       applyData(d);
       renderData();
