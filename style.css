@@ -704,3 +704,10 @@ textarea.field__input { min-height: 110px; resize: vertical; }
   .art--xl { --size: 220px; }
   .page-hero .art--tr { top: auto; bottom: 8%; right: -30px; }
 }
+.page-hero--short { padding: var(--s5) 0 var(--s4); }
+.booking__main { min-width: 0; }
+.receipt-wrap .art { top: -30px; right: -20px; }
+@media (max-width: 420px) {
+  .btn { padding: 0 20px; letter-spacing: .1em; }
+  .step__nav .btn--sm { padding: 0 16px; }
+}
