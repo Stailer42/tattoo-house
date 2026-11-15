@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Галерея робіт: Tattoo House, тату-салон у Львові</title>
+  <meta name="description" content="Роботи майстрів Tattoo House у Львові: реалізм, графіка, ірезумі, леттеринг, fine line. Дивіться та обирайте свій стиль.">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="uk_UA">
+  <meta property="og:site_name" content="Tattoo House">
+  <meta property="og:title" content="Галерея робіт: Tattoo House, тату-салон у Львові">
+  <meta property="og:description" content="Роботи майстрів Tattoo House у Львові: реалізм, графіка, ірезумі, леттеринг, fine line. Дивіться та обирайте свій стиль.">
+  <meta property="og:image" content="https://stailer42.github.io/tattoo-house/assets/img/og.jpg">
+  <meta property="og:url" content="https://stailer42.github.io/tattoo-house/gallery.html">
+  <meta name="twitter:card" content="summary">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=Rubik+Dirt&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.classList.add('js');</script>
+  <script src="script.js" defer></script>
+</head>
+<body class="page-inner">
+  <a class="skip" href="#main">Перейти до вмісту</a>
+
+  <header class="site-header site-header--inner">
+    <nav class="site-header__bar" aria-label="Головне меню">
+      <a class="header-icon" href="tel:+380322474747" aria-label="Зателефонувати в салон"><svg aria-hidden="true"><use href="#i-phone"></use></svg></a>
+      <ul class="nav-list nav-list--left">
+        <li><a href="index.html">Головна</a></li>
+        <li><a href="gallery.html" aria-current="page">Галерея</a></li>
+      </ul>
+      <a class="brand" href="index.html" aria-label="Tattoo House, на головну">
+        <span class="brand__sticker"><img src="assets/img/logo.jpg" alt="" width="400" height="400"></span>
+      </a>
+      <ul class="nav-list nav-list--right">
+        <li><a href="booking.html">Запис</a></li>
+        <li><a href="masters.html">Майстри</a></li>
+      </ul>
+      <button class="burger" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Відкрити меню"><span></span><span></span><span></span></button>
+    </nav>
+  </header>
+
+  <div class="mobile-menu" id="mobile-menu" hidden>
+    <svg class="art art--xl art--br art--red art--rot" aria-hidden="true"><use href="#i-skull"></use></svg>
+    <ul class="mobile-menu__list">
+      <li><a href="index.html"><span>01</span>Головна</a></li>
+      <li><a href="gallery.html" aria-current="page"><span>02</span>Галерея</a></li>
+      <li><a href="booking.html"><span>03</span>Запис</a></li>
+      <li><a href="masters.html"><span>04</span>Майстри</a></li>
+    </ul>
+    <a class="btn" href="booking.html"><span class="btn__fill"></span><span class="btn__label">Записатися на&nbsp;сеанс</span></a>
+  </div>
+
+  <main id="main">
+    <section class="page-hero" aria-labelledby="page-title">
+      <div class="page-hero__bg page-hero__bg--gallery" aria-hidden="true"></div>
+      <svg class="art art--lg art--tr art--red art--rot" aria-hidden="true"><use href="#i-skull"></use></svg>
+      <svg class="art art--sm art--bl art--delay" aria-hidden="true"><use href="#i-star"></use></svg>
+      <div class="container">
+        <p class="label" data-reveal="left">Портфоліо</p>
+        <h1 id="page-title" data-reveal="up">Галерея<br>робіт</h1>
+        <p class="lead" data-reveal="up">Роботи наших майстрів: від&nbsp;тонких мініатюр до&nbsp;спини в&nbsp;японському стилі. Натисніть на&nbsp;фото, щоб відкрити його на&nbsp;весь екран.</p>
+        <div class="gallery-meta" data-reveal="up">
+          <span><strong id="gallery-count">10</strong> робіт</span>
+          <span><strong>8</strong> майстрів</span>
+          <span><strong>7</strong> стилів</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tight" aria-label="Роботи">
+      <svg class="art art--xl art--br art--slow" aria-hidden="true"><use href="#i-horns"></use></svg>
+      <div class="container">
+        <div class="works" id="works-mount" data-stagger></div>
+        <div class="section-foot" data-reveal="up">
+          <a class="btn btn--pulse" href="booking.html"><span class="btn__fill"></span><span class="btn__label">Хочу таке ж: записатися</span><svg aria-hidden="true"><use href="#i-arrow"></use></svg></a>
+          <a class="btn btn--ghost" href="masters.html"><span class="btn__fill"></span><span class="btn__label">Обрати майстра за&nbsp;стилем</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <svg class="art art--lg art--tr art--red art--rot" aria-hidden="true"><use href="#i-horns"></use></svg>
+    <div class="container site-footer__grid">
+      <div>
+        <div class="footer-brand"><img src="assets/img/logo.jpg" alt="" width="56" height="56" loading="lazy"><p>Tattoo House</p></div>
+        <ul class="footer-list">
+          <li><svg aria-hidden="true"><use href="#i-pin"></use></svg><div><a class="link" href="https://www.google.com/maps/search/?api=1&amp;query=Horodotska+St+47+Lviv" target="_blank" rel="noopener">вул. Городоцька, 47, Львів</a><small>Вхід з&nbsp;вулиці, чорні двері з&nbsp;неоном</small></div></li>
+          <li><svg aria-hidden="true"><use href="#i-phone"></use></svg><div><a class="link" href="tel:+380322474747">+380&nbsp;32&nbsp;247&nbsp;47&nbsp;47</a><small>Дзвінки щодня з&nbsp;11:00</small></div></li>
+          <li><svg aria-hidden="true"><use href="#i-clock"></use></svg><div><p>Вт–Нд: 11:00–21:00</p><small>Понеділок вихідний</small></div></li>
+        </ul>
+        <div class="socials">
+          <a href="https://instagram.com/tattoohouse.lviv" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-instagram"></use></svg>Instagram</a>
+          <a href="https://t.me/tattoohouse_lviv" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-telegram"></use></svg>Telegram</a>
+        </div>
+        <p class="copyright">© 2026 Tattoo House. Демо-сайт: салон, майстри, відгуки та&nbsp;контакти вигадані.</p>
+      </div>
+      <div class="map-frame">
+        <span class="map-pin">Ми тут</span>
+        <iframe title="Карта: Tattoo House, вул. Городоцька, 47, Львів" src="https://www.google.com/maps/embed?origin=mfe&amp;pb=!1m3!2m1!1sHorodotska+St+47,+Lviv,+Ukraine!6i16" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </footer>
+
+  <a class="btn btn--pulse float-cta" href="booking.html"><span class="btn__fill"></span><span class="btn__label">Записатися</span></a>
+</body>
+</html>
