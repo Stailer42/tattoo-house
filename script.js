@@ -245,6 +245,7 @@
       if (e.key === 'Tab') {
         var f = focusables(); if (!f.length) return;
         var first = f[0], last = f[f.length - 1];
+        if (!el.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
@@ -258,7 +259,12 @@
       if (onClose) onClose();
     }
     document.addEventListener('keydown', onKey);
-    el.addEventListener('click', function (e) { if (e.target === el || e.target.closest('[data-close]')) close(); });
+    var downOnBackdrop = false;
+    el.addEventListener('pointerdown', function (e) { downOnBackdrop = e.target === el; });
+    el.addEventListener('click', function (e) {
+      if ((e.target === el && downOnBackdrop) || e.target.closest('[data-close]')) close();
+      downOnBackdrop = false;
+    });
     var f = focusables(); if (f.length) f[0].focus();
     return close;
   }
@@ -551,7 +557,7 @@
       });
     }
     progress.forEach(function (b, i) {
-      b.addEventListener('click', function () { if (i + 1 <= state.maxStep) go(i + 1); });
+      b.addEventListener('click', function () { jump(i + 1); });
     });
 
     function navHTML(back, nextLabel) {
@@ -590,7 +596,7 @@
     }
     function step3() {
       return '<div class="step__head"><p class="label">Крок 3 / 4</p><h2>Коли вам зручно?</h2><p class="text">Працюємо з' + NB + 'вівторка по' + NB + 'неділю, 11:00–21:00. Сеанс починається в' + NB + 'обраний час.</p></div>' +
-        '<div class="calendar"><div class="cal" id="cal"></div><div class="slots" id="slots"></div></div>' + navHTML(true, 'Залишити контакти');
+        '<p class="sr-only" id="cal-live" aria-live="polite"></p><div class="calendar"><div class="cal" id="cal"></div><div class="slots" id="slots"></div></div>' + navHTML(true, 'Залишити контакти');
     }
     function step4() {
       return '<div class="step__head"><p class="label">Крок 4 / 4</p><h2>Як з' + NB + 'вами зв’язатися?</h2></div>' +
@@ -612,7 +618,7 @@
       var prevDisabled = new Date(y, mo, 1) <= new Date(minDate.getFullYear(), minDate.getMonth(), 1);
       var nextDisabled = new Date(y, mo + 1, 1) > maxDate;
       var html = '<div class="cal__head"><button type="button" class="cal__btn" data-cal="-1" aria-label="Попередній місяць"' + (prevDisabled ? ' disabled' : '') + '>' + icon('left') + '</button>' +
-        '<p class="cal__title" aria-live="polite">' + MONTHS[mo] + ' ' + y + '</p>' +
+        '<p class="cal__title">' + MONTHS[mo] + ' ' + y + '</p>' +
         '<button type="button" class="cal__btn" data-cal="1" aria-label="Наступний місяць"' + (nextDisabled ? ' disabled' : '') + '>' + icon('right') + '</button></div>' +
         '<div class="cal__grid">' + DOW.map(function (d) { return '<span class="cal__dow">' + d + '</span>'; }).join('');
       for (var i = 0; i < offset; i++) html += '<span class="cal__day is-empty"></span>';
@@ -662,7 +668,11 @@
         var nameI = $('#bk-name', stage), phoneI = $('#bk-phone', stage), comI = $('#bk-comment', stage), agreeI = $('#bk-agree', stage);
         nameI.value = state.name; phoneI.value = state.phone; comI.value = state.comment; agreeI.checked = state.agree;
         nameI.addEventListener('input', function () { state.name = nameI.value.trim(); renderReceipt(); });
-        phoneI.addEventListener('input', function () { phoneI.value = maskPhone(phoneI.value); state.phone = phoneI.value; });
+        phoneI.addEventListener('input', function (e) {
+          if (!/^delete/.test(e.inputType || '')) phoneI.value = maskPhone(phoneI.value);
+          state.phone = phoneI.value;
+        });
+        phoneI.addEventListener('blur', function () { phoneI.value = maskPhone(phoneI.value); state.phone = phoneI.value; });
         comI.addEventListener('input', function () { state.comment = comI.value; });
         agreeI.addEventListener('change', function () { state.agree = agreeI.checked; });
         $('#contact-form', stage).addEventListener('submit', function (e) { e.preventDefault(); next(); });
@@ -673,7 +683,16 @@
 
     function onCalClick(e) {
       var nav = e.target.closest('[data-cal]');
-      if (nav) { view = new Date(view.getFullYear(), view.getMonth() + parseInt(nav.getAttribute('data-cal'), 10), 1); renderCalendar(); var t = $('[data-cal="' + nav.getAttribute('data-cal') + '"]', stage); if (t && !t.disabled) t.focus(); return; }
+      if (nav) {
+        var dir = nav.getAttribute('data-cal');
+        view = new Date(view.getFullYear(), view.getMonth() + parseInt(dir, 10), 1);
+        renderCalendar();
+        var live = $('#cal-live', stage); if (live) live.textContent = MONTHS[view.getMonth()] + ' ' + view.getFullYear();
+        var t = $('[data-cal="' + dir + '"]', stage);
+        if (t && t.disabled) t = $('[data-cal="' + (-dir) + '"]', stage);
+        if (t) t.focus();
+        return;
+      }
       var day = e.target.closest('[data-date]');
       if (day && !day.disabled) {
         state.date = day.getAttribute('data-date');
@@ -683,28 +702,44 @@
         return;
       }
       var slot = e.target.closest('[data-time]');
-      if (slot && !slot.disabled) { state.time = slot.getAttribute('data-time'); renderSlots(); renderReceipt(); stepError(''); }
+      if (slot && !slot.disabled) {
+        state.time = slot.getAttribute('data-time'); renderSlots(); renderReceipt(); stepError('');
+        var ss = $('[data-time="' + state.time + '"]', stage); if (ss) ss.focus();
+      }
     }
 
     function maskPhone(v) {
       var d = v.replace(/\D/g, '');
-      if (d.indexOf('380') !== 0) d = d.charAt(0) === '0' ? '38' + d : '380' + d;
-      d = d.slice(0, 12);
-      var out = '+' + d.slice(0, 3);
-      if (d.length > 3) out += ' ' + d.slice(3, 5);
-      if (d.length > 5) out += ' ' + d.slice(5, 8);
-      if (d.length > 8) out += ' ' + d.slice(8, 10);
-      if (d.length > 10) out += ' ' + d.slice(10, 12);
+      if ('380'.indexOf(d) === 0) return '';            /* only (part of) the prefix left: clear */
+      if (d.indexOf('380') === 0) d = d.slice(3);
+      else if (d.charAt(0) === '0') d = d.slice(1);
+      d = d.slice(0, 9);
+      var out = '+380';
+      if (d.length) out += ' ' + d.slice(0, 2);
+      if (d.length > 2) out += ' ' + d.slice(2, 5);
+      if (d.length > 5) out += ' ' + d.slice(5, 7);
+      if (d.length > 7) out += ' ' + d.slice(7, 9);
       return out;
     }
 
-    function validate() {
-      if (state.step === 1 && !state.services.length) { stepError('Оберіть хоча б одну послугу.'); return false; }
-      if (state.step === 2 && !state.master) { stepError('Оберіть майстра або варіант «Будь-який вільний».'); return false; }
-      if (state.step === 3) {
-        if (!state.date) { stepError('Оберіть день у календарі.'); return false; }
-        if (!state.time) { stepError('Оберіть вільний час.'); return false; }
+    function missing(n) {
+      if (n === 1 && !state.services.length) return 'Оберіть хоча б одну послугу.';
+      if (n === 2 && !state.master) return 'Оберіть майстра або варіант «Будь-який вільний».';
+      if (n === 3 && !state.date) return 'Оберіть день у календарі.';
+      if (n === 3 && !state.time) return 'Оберіть вільний час.';
+      return '';
+    }
+    function jump(n) {
+      if (n > state.maxStep || n === state.step || state.step === 5) return;
+      for (var k = Math.min(state.step, n); k < n; k++) {
+        var msg = missing(k);
+        if (msg) { if (k !== state.step) go(k); stepError(msg); return; }
       }
+      go(n);
+    }
+    function validate() {
+      var msg = missing(state.step);
+      if (msg) { stepError(msg); return false; }
       if (state.step === 4) {
         var ok = true;
         ok = setFieldError($('#bk-name', stage), state.name.length >= 2 ? '' : 'Вкажіть ім’я, хоча б 2 літери') && ok;
@@ -720,11 +755,14 @@
 
     function next() {
       if (!validate()) return;
-      if (state.step === 4) { confirm(); return; }
+      if (state.step === 4) {
+        for (var k = 1; k <= 3; k++) { var msg = missing(k); if (msg) { go(k); stepError(msg); return; } }
+        confirm(); return;
+      }
       go(state.step + 1);
     }
 
-    function go(n) {
+    function go(n, initial) {
       var back = n < state.step;
       stage.removeEventListener('click', onCalClick);
       state.step = n;
@@ -732,6 +770,7 @@
       var html = [null, step1, step2, step3, step4][n]();
       stage.innerHTML = '<div class="step' + (back ? ' is-back' : '') + '">' + html + '</div>';
       bindStep(); renderProgress();
+      if (initial) return;
       var h = $('h2', stage); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
       var top = root.getBoundingClientRect().top + window.scrollY - 20;
       if (window.scrollY > top) window.scrollTo({ top: top, behavior: reduceMotion ? 'auto' : 'smooth' });
@@ -755,7 +794,7 @@
       var t = $('.success__title', stage); t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true });
     }
 
-    go(1);
+    go(1, true);
     renderReceipt();
   }
 
@@ -770,6 +809,8 @@
     if ((m = $('#masters-mount'))) renderMastersPreview(m, parseInt(m.getAttribute('data-limit') || '4', 10));
     if ((m = $('#masters-full'))) renderMastersFull(m);
     if ((m = $('#gallery-count'))) m.textContent = GALLERY.length;
+    if ((m = $('#gallery-styles'))) m.textContent = GALLERY.map(function (g) { return g.style; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).length;
+    if ((m = $('#gallery-masters'))) m.textContent = MASTERS.length;
 
     initSticker();
     initMenu();
