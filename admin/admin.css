@@ -1,0 +1,1569 @@
+/* =========================================================
+   Tattoo House адмінка: макет (з референсу admin-panel).
+   Токени, кнопки, поля, вкладки — у base.css.
+   Mobile-first: спершу телефон, далі @media для більших екранів.
+   ========================================================= */
+
+.adm {
+  --side-w: 256px;
+  --top-h: 56px;
+  --tabbar-h: 64px;
+  min-height: 100svh;
+  background: var(--white);
+}
+
+.adm h1,
+.adm h2,
+.adm h3 {
+  font-weight: 400;
+}
+
+.adm b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- завантаження ---------- */
+.adm-boot {
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  padding: var(--gutter);
+}
+
+.adm-boot {
+  align-content: center;
+  gap: var(--s4);
+}
+
+.adm-boot .logo {
+  animation: adm-pulse 1400ms var(--ease) infinite alternate;
+}
+
+.adm-boot__slow {
+  font-size: 15px;
+  color: var(--ink-75);
+  text-align: center;
+  visibility: hidden;
+  animation: adm-show 1ms 8s forwards;
+}
+
+@keyframes adm-show {
+  to { visibility: visible; }
+}
+
+@keyframes adm-pulse {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
+
+/* ---------- вхід ---------- */
+.adm-login {
+  min-height: 100svh;
+  display: grid;
+}
+
+.adm-login__side {
+  display: none;
+}
+
+.adm-login__main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--s3);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--s5) var(--gutter);
+}
+
+.adm-login__logo {
+  margin-bottom: var(--s4);
+}
+
+.adm-login h1 {
+  margin-bottom: var(--s3);
+  font-size: clamp(2.6rem, 9vw, 4.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+}
+
+.adm-login .form {
+  gap: var(--s4);
+}
+
+/* кнопки у формах за розміром тексту, як на сайті */
+.adm .form > .btn {
+  justify-self: start;
+}
+
+.adm-login__error {
+  padding: 12px var(--s3);
+  background: var(--pink);
+  font-size: 14px;
+}
+
+.adm-login__demo {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: var(--s4);
+  padding: var(--s3);
+  background: var(--pink-soft);
+  font-size: 14px;
+  color: var(--ink-75);
+}
+
+.adm-login__demo .icon {
+  margin-top: 3px;
+}
+
+.adm-login__demo p {
+  font-size: 14px;
+}
+
+.adm-login__back {
+  align-self: flex-start;
+  margin-top: var(--s2);
+  font-size: 14px;
+  color: var(--ink-75);
+}
+
+@media (min-width: 900px) {
+  .adm-login {
+    grid-template-columns: 1.2fr 1fr;
+  }
+  .adm-login__side {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--s5) 48px;
+  }
+  .adm-login__tag {
+    font-size: clamp(1.8rem, 3vw, 2.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 300;
+    max-width: 14ch;
+    text-wrap: balance;
+  }
+  .adm-login__logo {
+    display: none;
+  }
+}
+
+/* поле пароля з кнопкою "показати" */
+.field--reveal {
+  position: relative;
+}
+
+.field--reveal input {
+  padding-right: 52px;
+}
+
+.field__reveal {
+  position: absolute;
+  right: 0;
+  top: 26px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-75);
+  cursor: pointer;
+}
+
+.field__reveal:hover {
+  color: var(--ink);
+}
+
+.field__hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-55);
+}
+
+.field.is-invalid .field__hint {
+  display: none;
+}
+
+.field.is-invalid input,
+.field.is-invalid textarea,
+.field.is-invalid select {
+  border-bottom: 2px solid var(--ink);
+}
+
+/* ---------- оболонка ---------- */
+.adm-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  height: var(--top-h);
+  padding: 0 var(--gutter);
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 var(--hair);
+}
+
+.adm-top__label {
+  font-size: 11px;
+}
+
+.adm-top__actions {
+  display: flex;
+  margin-left: auto;
+}
+
+.adm-iconlink {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 320ms var(--ease), transform 320ms var(--ease);
+}
+
+.adm-iconlink:hover {
+  background: var(--pink);
+  transform: translateY(-1px);
+}
+
+.adm-side {
+  display: none;
+}
+
+.adm-main {
+  min-width: 0;
+  padding: var(--s4) var(--gutter) calc(var(--tabbar-h) + var(--s5) + env(safe-area-inset-bottom));
+  outline: none;
+}
+
+.adm-view {
+  max-width: 1120px;
+  animation: panel-in 500ms var(--ease) both;
+}
+
+/* нижня панель на телефоні */
+.adm-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(10, 10, 10, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 -1px 0 var(--hair);
+}
+
+.adm-tabbar .adm-nav__link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: var(--tabbar-h);
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ink-75);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.adm-tabbar .icon {
+  width: 22px;
+  height: 22px;
+  transition: transform 320ms var(--ease);
+}
+
+.adm-tabbar .adm-nav__link[aria-current="page"],
+.adm-tabbar .adm-nav__link.is-current {
+  color: var(--ink);
+}
+
+.adm-tabbar .adm-nav__link[aria-current="page"] .icon,
+.adm-tabbar .adm-nav__link.is-current .icon {
+  transform: translateY(-2px);
+}
+
+/* точка під активним пунктом */
+.adm-tabbar .adm-nav__link::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: scale(0);
+  transition: transform 320ms var(--ease);
+}
+
+.adm-tabbar .adm-nav__link[aria-current="page"]::after,
+.adm-tabbar .adm-nav__link.is-current::after {
+  transform: none;
+}
+
+.adm-tabbar .adm-badge {
+  position: absolute;
+  top: 6px;
+  left: calc(50% + 6px);
+}
+
+/* лічильник */
+.adm-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* список розділів у шторці «Ще» */
+.adm-more {
+  display: grid;
+}
+
+.adm-more .adm-nav__link,
+.adm-nav .adm-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+  padding: 0 var(--s3);
+  color: var(--ink-75);
+  text-decoration: none;
+  transition: background-color 320ms var(--ease), color 320ms var(--ease), padding 320ms var(--ease);
+}
+
+.adm-more .adm-nav__link {
+  box-shadow: 0 1px 0 var(--hair);
+}
+
+.adm-nav .adm-nav__link[aria-current="page"] {
+  background: var(--white);
+  color: var(--ink);
+}
+
+.adm-more .adm-nav__link[aria-current="page"] {
+  background: var(--pink-soft);
+  color: var(--ink);
+}
+
+.adm-nav__text {
+  flex: 1;
+}
+
+.adm-more__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s4);
+  margin-top: var(--s4);
+}
+
+.adm-more__foot .ulink,
+.adm-side__foot .ulink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink-75);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .adm-nav .adm-nav__link:not([aria-current="page"]):hover {
+    padding-left: 22px;
+    color: var(--ink);
+  }
+}
+
+@media (min-width: 960px) {
+  .adm-app {
+    display: grid;
+    grid-template-columns: var(--side-w) minmax(0, 1fr);
+    min-height: 100svh;
+  }
+  .adm-top,
+  .adm-tabbar {
+    display: none;
+  }
+  .adm-side {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    height: 100svh;
+    padding: var(--s4) var(--s3);
+    overflow-y: auto;
+  }
+  .adm-side > .logo,
+  .adm-side > .label {
+    padding: 0 var(--s3);
+  }
+  .adm-side > .label {
+    margin: -6px 0 var(--s4);
+    font-size: 11px;
+  }
+  .adm-nav {
+    display: grid;
+    gap: 2px;
+  }
+  .adm-side__foot {
+    display: grid;
+    gap: 0;
+    margin-top: auto;
+    padding: var(--s3) var(--s3) 0;
+    box-shadow: 0 -1px 0 var(--hair);
+  }
+  .adm-side__user {
+    font-size: 13px;
+    color: var(--ink-55);
+  }
+  .adm-main {
+    padding: var(--s5) 48px var(--s6);
+  }
+}
+
+/* ---------- заголовок розділу ---------- */
+.adm-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-bottom: var(--s5);
+}
+
+.adm-title {
+  font-size: clamp(2.2rem, 5vw, 3.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  outline: none;
+}
+
+.adm-lead {
+  margin-top: var(--s3);
+  color: var(--ink-75);
+}
+
+.adm-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+/* ---------- блоки ---------- */
+.adm-grid {
+  display: grid;
+  gap: var(--s4);
+}
+
+@media (min-width: 1100px) {
+  .adm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .adm-grid > .adm-panel:first-child {
+    grid-row: span 2;
+  }
+}
+
+.adm-panel {
+  padding: var(--s4) var(--s3);
+  background: var(--pink-soft);
+}
+
+@media (min-width: 640px) {
+  .adm-panel {
+    padding: var(--s4);
+  }
+}
+
+.adm-panel__title {
+  margin-bottom: var(--s3);
+  font-size: clamp(1.35rem, 2vw, 1.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.adm-note {
+  margin-bottom: var(--s4);
+  font-size: 15px;
+  color: var(--ink-75);
+}
+
+.adm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.adm-warn {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: none;
+  margin-bottom: var(--s4);
+  padding: var(--s3);
+  background: var(--pink);
+  font-size: 15px;
+}
+
+.adm-warn .icon {
+  margin-top: 3px;
+}
+
+/* розділ, якого ще немає */
+.adm-soon {
+  display: grid;
+  gap: var(--s2);
+  justify-items: start;
+  padding: var(--s5) var(--s4);
+  background: var(--pink-soft);
+}
+
+.adm-soon .icon {
+  width: 28px;
+  height: 28px;
+  margin-bottom: var(--s2);
+  color: var(--accent);
+}
+
+/* кнопка лише з іконкою */
+.btn--icon {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
+/* ---------- вкладки категорій ---------- */
+.adm-tabs .tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-tab__count {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+/* ---------- список рядків (послуги, майстри, ...) ---------- */
+.adm-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--hair);
+}
+
+.adm-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  border-bottom: 1px solid var(--hair);
+}
+
+.adm-row__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-height: 72px;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.adm-row__main:disabled {
+  cursor: default;
+}
+
+.adm-row__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.adm-row__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 17px;
+  line-height: 1.3;
+  transition: transform 500ms var(--ease);
+}
+
+.adm-row__meta {
+  font-size: 13px;
+  color: var(--ink-75);
+}
+
+.adm-row.is-hidden .adm-row__title {
+  color: var(--ink-75);
+}
+
+.adm-row.is-hidden .adm-avatar {
+  opacity: 0.55;
+}
+
+.adm-row__tools {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+.adm-row__tools .btn--ghost {
+  box-shadow: none;
+}
+
+.adm-row__tools .btn--ghost:not([disabled]):hover {
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+@media (hover: hover) {
+  .adm-row__main:not(:disabled):hover .adm-row__title {
+    transform: translateX(6px);
+  }
+}
+
+.adm-list__empty {
+  padding: var(--s4) 0;
+}
+
+.adm-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--pink);
+  font-size: 12px;
+  color: var(--ink);
+}
+
+/* аватарка: фото або ініціали */
+.adm-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--pink);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.adm-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adm-avatar--lg {
+  width: 96px;
+  height: 96px;
+  font-size: 28px;
+  font-weight: 300;
+}
+
+/* ---------- форми в діалогах ---------- */
+.adm-form {
+  max-width: none;
+}
+
+.adm-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+}
+
+.adm .field input::placeholder,
+.adm .field textarea::placeholder {
+  color: var(--ink-55);
+}
+
+.field select {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 32px 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23F2F2F2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 4px center;
+  font: inherit;
+  font-size: 18px;
+  color: var(--ink);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.field select:focus {
+  outline: none;
+  border-bottom-color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+}
+
+.check__text {
+  display: grid;
+  gap: 2px;
+  padding-top: 2px;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.check__note {
+  font-size: 13px;
+  color: var(--ink-55);
+}
+
+.adm-fieldset {
+  margin: var(--s3) 0 0;
+  padding: var(--s4) 0 0;
+  border: 0;
+  border-top: 1px solid var(--hair);
+}
+
+.adm-fieldset > legend {
+  float: left;
+  width: 100%;
+  margin-bottom: var(--s2);
+  padding: 0;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  font-weight: 300;
+}
+
+.adm-fieldset > legend + * {
+  clear: both;
+}
+
+.adm-fieldset > .adm-note {
+  margin-bottom: var(--s3);
+}
+
+/* фото майстра */
+.adm-photo {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+}
+
+.adm-photo__side {
+  display: grid;
+  gap: var(--s2);
+}
+
+.adm-photo__note {
+  font-size: 13px;
+  color: var(--ink-55);
+}
+
+
+/* ---------- записи: список ---------- */
+.adm-views {
+  margin-bottom: var(--s4);
+}
+
+.adm-filters {
+  display: grid;
+  gap: 0 var(--s3);
+  margin-bottom: var(--s4);
+}
+
+@media (min-width: 720px) {
+  .adm-filters {
+    grid-template-columns: 1fr 1fr 1.4fr;
+  }
+}
+
+.adm-filters .field input,
+.adm-filters .field select {
+  font-size: 16px;
+}
+
+.adm-bkday {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: var(--s4) 0 var(--s2);
+  font-size: 1.2rem;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+}
+
+.adm-bkday::first-letter {
+  text-transform: uppercase;
+}
+
+.adm-bk__time {
+  flex: none;
+  width: 92px;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.adm-bk.is-cancelled .adm-bk__time,
+.adm-bk.is-cancelled .adm-bk__name {
+  color: var(--ink-75);
+  text-decoration: line-through;
+  text-decoration-color: var(--line);
+}
+
+.adm-chip--new {
+  background: var(--ink);
+  color: var(--white);
+}
+
+.adm-chip--cancelled {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+@media (max-width: 479px) {
+  .adm-bk .adm-row__main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .adm-bk__time {
+    width: auto;
+    font-size: 13px;
+    color: var(--ink-75);
+  }
+}
+
+
+/* ---------- фото ---------- */
+.adm-thumb {
+  flex: none;
+  width: 48px;
+  height: 60px;
+  overflow: hidden;
+  background: var(--pink);
+}
+
+.adm-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.02);
+}
+
+.adm-row.is-hidden .adm-thumb {
+  opacity: 0.5;
+}
+
+.adm-photoedit {
+  display: grid;
+  gap: var(--s4);
+  align-items: start;
+}
+
+@media (min-width: 640px) {
+  .adm-photoedit {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+}
+
+.adm-photoedit__side {
+  display: grid;
+  gap: var(--s3);
+}
+
+/* рамка прев'ю: як на сайті (роботи 4:5, салон 3:2) */
+.adm-frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--pink);
+}
+
+.adm-frame--salon {
+  aspect-ratio: 3 / 2;
+  max-width: 320px;
+}
+
+.adm-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.02);
+}
+
+.adm-frame__empty {
+  padding: var(--s3);
+  font-size: 14px;
+  color: var(--ink-75);
+  text-align: center;
+}
+
+/* кнопка «Видалити» в діалозі: ліворуч, окремо від основних дій */
+.adm-dialog__danger {
+  margin-right: auto;
+}
+
+@media (max-width: 479px) {
+  .adm-dialog__danger {
+    width: 52px;
+    padding: 0;
+  }
+  .adm-dialog__danger .btn__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .adm-dialog__actions .btn {
+    padding: 0 20px;
+  }
+  .adm-dialog__actions .adm-dialog__danger {
+    padding: 0;
+  }
+}
+
+/* ---------- діалог / шторка ---------- */
+.adm-dialog {
+  width: 100%;
+  max-width: 100%;
+  max-height: 92svh;
+  margin: auto 0 0;
+  padding: 0;
+  border: 0;
+  background: var(--white);
+  color: var(--ink);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.adm-dialog[open] {
+  animation: adm-sheet-in 500ms var(--ease) both;
+}
+
+.adm-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  animation: adm-fade 320ms var(--ease) both;
+}
+
+@keyframes adm-sheet-in {
+  from { transform: translateY(40px); opacity: 0; }
+}
+
+@keyframes adm-fade {
+  from { opacity: 0; }
+}
+
+.adm-dialog__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3) var(--gutter);
+  background: var(--white);
+  box-shadow: 0 1px 0 var(--hair);
+}
+
+.adm-dialog__head h2 {
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.adm-dialog__body {
+  padding: var(--s4) var(--gutter);
+}
+
+.adm-dialog__actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s2);
+  padding: var(--s3) var(--gutter) calc(var(--s3) + env(safe-area-inset-bottom));
+  background: var(--white);
+  box-shadow: 0 -1px 0 var(--hair);
+}
+
+@media (min-width: 640px) {
+  .adm-dialog {
+    width: min(560px, calc(100% - 48px));
+    max-height: 86svh;
+    margin: auto;
+  }
+  .adm-dialog--wide {
+    width: min(820px, calc(100% - 48px));
+  }
+  .adm-dialog__head,
+  .adm-dialog__body,
+  .adm-dialog__actions {
+    padding-left: var(--s4);
+    padding-right: var(--s4);
+  }
+}
+
+/* ---------- тост ---------- */
+.adm-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom));
+  z-index: 1000;
+  max-width: calc(100% - 32px);
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 15px;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px);
+  transition: opacity 320ms var(--ease), transform 500ms var(--ease);
+}
+
+.adm-toast.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.adm-toast.is-error {
+  border-radius: 0;
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+@media (min-width: 960px) {
+  .adm-toast {
+    bottom: 32px;
+  }
+  /* по центру робочої області, а не всього вікна (коли видно бокове меню) */
+  .adm-app:not([hidden]) ~ .adm-toast {
+    left: calc(50% + var(--side-w) / 2);
+    bottom: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm *:not(.adm-boot__slow),
+  .adm *::before,
+  .adm *::after,
+  .adm-dialog::backdrop {
+    animation: none !important;
+    transition: none !important;
+  }
+  /* base.css обнуляє затримки всім анімаціям; підказці про повільне завантаження затримка потрібна */
+  .adm .adm-boot__slow {
+    animation-delay: 8s !important;
+  }
+}
+
+
+/* =========================================================
+   Tattoo House: доповнення до референсу
+   ========================================================= */
+
+/* шипи під лого (арт сайту) */
+.adm-spikes {
+  width: 120px;
+  height: 14px;
+  color: var(--red);
+}
+
+.adm-side > .adm-spikes {
+  margin: 0 var(--s3) var(--s2);
+}
+
+.adm-login__side {
+  border-right: 2px solid var(--red);
+}
+
+.adm-login__tag {
+  color: var(--ink);
+}
+
+.adm-login__error {
+  border-left: 2px solid var(--red);
+  color: var(--ink);
+}
+
+/* екран «Supabase не налаштовано» */
+.adm-setup {
+  display: grid;
+  gap: var(--s3);
+  max-width: 560px;
+  padding: var(--s4);
+  background: var(--bg-2);
+  border-left: 2px solid var(--red);
+}
+
+.adm-setup h1 {
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  line-height: 1;
+}
+
+/* зрізані кути на панелях, діалогах, тостах (як на сайті) */
+.adm-panel,
+.adm-soon,
+.adm-setup {
+  clip-path: var(--chamfer);
+}
+
+.adm-dialog {
+  border-top: 2px solid var(--red);
+}
+
+@media (min-width: 640px) {
+  .adm-dialog {
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  }
+}
+
+.adm-toast {
+  border-radius: 0;
+  background: var(--red);
+  color: #fff;
+  clip-path: var(--chamfer);
+}
+
+.adm-toast.is-error {
+  background: var(--bg-3);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--red-text);
+}
+
+.adm-title {
+  text-transform: none;
+}
+
+.adm-nav .adm-nav__link[aria-current="page"] {
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: inset 2px 0 0 var(--red);
+}
+
+.adm-badge {
+  border-radius: 0;
+  background: var(--red);
+  color: #fff;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+
+.adm-chip {
+  border-radius: 0;
+  background: var(--bg-3);
+}
+
+.adm-avatar,
+.adm-iconlink {
+  border-radius: 0;
+}
+
+.adm-iconlink:hover {
+  background: var(--bg-3);
+}
+
+/* статуси записів */
+.adm-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  font-family: var(--f-head);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.adm-status--new {
+  background: var(--red);
+  color: #fff;
+}
+
+.adm-status--confirmed {
+  box-shadow: inset 0 0 0 1px var(--ink);
+  color: var(--ink);
+}
+
+.adm-status--cancelled {
+  color: var(--ink-55);
+  text-decoration: line-through;
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+
+/* ---------- таблиця ---------- */
+.adm-tablewrap {
+  width: 100%;
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.adm-table thead {
+  display: none;
+}
+
+.adm-table tbody {
+  display: grid;
+  gap: var(--s2);
+}
+
+.adm-tr {
+  display: grid;
+  gap: 6px;
+  padding: var(--s3);
+  background: var(--bg-2);
+  border-left: 2px solid transparent;
+}
+
+.adm-tr.is-clickable {
+  cursor: pointer;
+}
+
+.adm-tr.is-new {
+  border-left-color: var(--red);
+}
+
+.adm-tr.is-cancelled td {
+  color: var(--ink-55);
+}
+
+.adm-table td {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--s2);
+  align-items: baseline;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+
+.adm-table td::before {
+  content: attr(data-label);
+  font-family: var(--f-head);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-55);
+}
+
+.adm-table td:first-child {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.adm-table td:first-child::before {
+  display: none;
+}
+
+.adm-table__open {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--f-head);
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.adm-table__open:hover {
+  color: var(--red-text);
+}
+
+.adm-table a {
+  color: var(--ink);
+  text-decoration-color: var(--red-text);
+  text-underline-offset: 3px;
+}
+
+.adm-num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.adm-sub {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-55);
+}
+
+@media (min-width: 720px) {
+  .adm-tablewrap {
+    overflow-x: auto;
+  }
+  .adm-table thead {
+    display: table-header-group;
+  }
+  .adm-table tbody {
+    display: table-row-group;
+  }
+  .adm-tr {
+    display: table-row;
+    padding: 0;
+    background: none;
+  }
+  .adm-table th {
+    position: sticky;
+    top: 0;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-bottom: 2px solid var(--red);
+    font-family: var(--f-head);
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-75);
+    text-align: left;
+    white-space: nowrap;
+  }
+  .adm-table td {
+    display: table-cell;
+    padding: 12px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--hair);
+    overflow-wrap: normal;
+  }
+  .adm-table td::before {
+    display: none;
+  }
+  .adm-tr:nth-child(even) td {
+    background: rgba(242, 242, 242, 0.025);
+  }
+  .adm-tr.is-new td:first-child {
+    box-shadow: inset 2px 0 0 var(--red);
+  }
+  .adm-tr.is-clickable:hover td {
+    background: var(--bg-2);
+  }
+  .adm-table .is-right {
+    text-align: right;
+  }
+}
+
+/* панель фільтрів: пошук + статуси */
+.adm-toolbar {
+  display: grid;
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+}
+
+.adm-toolbar .tabs {
+  margin-bottom: 0;
+}
+
+.adm-toolbar .field input,
+.adm-toolbar .field select {
+  font-size: 16px;
+}
+
+@media (min-width: 900px) {
+  .adm-toolbar {
+    grid-template-columns: minmax(0, 1fr) 280px 220px;
+    align-items: end;
+  }
+}
+
+.adm-count {
+  margin: 0 0 var(--s3);
+  font-size: 14px;
+  color: var(--ink-75);
+}
+
+/* вибір арту для послуги */
+.adm-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.adm-icons legend {
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 0;
+  font-family: var(--f-head);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-75);
+}
+
+.adm-icons label {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: var(--bg-3);
+  color: var(--ink-75);
+  cursor: pointer;
+  clip-path: var(--chamfer);
+}
+
+.adm-icons input {
+  position: absolute;
+  opacity: 0;
+}
+
+.adm-icons svg {
+  width: 30px;
+  height: 30px;
+}
+
+.adm-icons input:checked + svg {
+  color: #fff;
+}
+
+.adm-icons label:has(input:checked) {
+  background: var(--red);
+}
+
+.adm-icons label:has(input:focus-visible) {
+  outline: 2px solid var(--red-hi);
+  outline-offset: 2px;
+}
+
+.adm-art {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  color: var(--red-text);
+}
+
+/* розіграш */
+.adm-winner {
+  display: grid;
+  gap: var(--s2);
+  margin-bottom: var(--s4);
+  padding: var(--s4);
+  background: var(--red);
+  color: #fff;
+  clip-path: var(--chamfer);
+}
+
+.adm-winner .label {
+  color: #fff;
+}
+
+.adm-winner__name {
+  font-family: var(--f-head);
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  line-height: 1;
+}
+
+.adm-winner a {
+  color: #fff;
+}
+
+.adm-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s4);
+  margin-bottom: var(--s4);
+}
+
+.adm-stat__num {
+  font-family: var(--f-head);
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.adm-stat__label {
+  font-size: 13px;
+  color: var(--ink-75);
+}
+
+.adm-section-gap {
+  margin-top: var(--s5);
+}
+
+/* превʼю нових фото в галереї до збереження */
+.adm-uploads {
+  display: grid;
+  gap: var(--s3);
+}
+
+.adm-upload {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: var(--s3);
+  align-items: start;
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--hair);
+}
+
+.adm-upload img {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+}
+
+.adm-upload__fields {
+  display: grid;
+  gap: var(--s2);
+}

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Адмінка: Tattoo House</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="same-origin">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" href="../favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&amp;family=Rubik+Dirt&amp;display=swap">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="admin.css">
+
+  <!-- ключі Supabase: файл генерується з .env або в GitHub Actions, у git його немає -->
+  <script src="../config.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
+  <script src="../lib/db-supabase.js" defer></script>
+  <!-- адмінка -->
+  <script src="typo.js" defer></script>
+  <script src="auth.js" defer></script>
+  <script src="ui.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body class="adm">
+  <!-- Іконки (Lucide) + арти сайту для послуг -->
+  <svg width="0" height="0" class="sr-only" aria-hidden="true">
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="m2 2 20 20"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+    <symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></symbol>
+    <symbol id="i-move" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></symbol>
+    <!-- арти сайту (суцільна заливка): іконки послуг -->
+    <symbol id="a-skull" viewBox="0 0 100 100"><path fill="currentColor" stroke="none" fill-rule="evenodd" d="M50 6C28 6 14 21 14 42c0 12 5 20 12 25v13c0 4 3 7 7 7h4v-8h6v8h14v-8h6v8h4c4 0 7-3 7-7V67c7-5 12-13 12-25C86 21 72 6 50 6ZM34 40c6 0 11 5 11 11s-5 9-11 9-10-4-10-9 4-11 10-11Zm32 0c6 0 10 6 10 11s-4 9-10 9-11-3-11-9 5-11 11-11ZM50 62l6 11H44Z"/></symbol>
+    <symbol id="a-horns" viewBox="0 0 100 100"><path fill="currentColor" stroke="none" d="M30 92C10 72 4 42 14 6c3 30 13 50 30 64Zm40 0c20-20 26-50 16-86-3 30-13 50-30 64Z"/></symbol>
+    <symbol id="a-bolt" viewBox="0 0 100 100"><path fill="currentColor" stroke="none" d="M60 2 20 56h24L34 98l46-58H56L70 2Z"/></symbol>
+    <symbol id="a-flame" viewBox="0 0 100 100"><path fill="currentColor" stroke="none" fill-rule="evenodd" d="M50 2c6 18 26 28 26 54 0 22-12 40-26 42-14-2-26-16-26-38 0-14 8-22 12-30 2 12 6 16 10 18-2-16-2-30 4-46Zm0 58c6 6 10 12 8 22-2 6-14 6-16 0-2-8 4-14 8-22Z"/></symbol>
+    <symbol id="a-dagger" viewBox="0 0 100 100"><path fill="currentColor" stroke="none" d="M50 2l7 56H43Zm-22 56h44v7H28Zm18 7h8v22h-8Zm4 22a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></symbol>
+    <symbol id="a-star" viewBox="0 0 100 100"><path fill="currentColor" stroke="none" d="M50 0c3 35 15 47 50 50-35 3-47 15-50 50-3-35-15-47-50-50 35-3 47-15 50-50Z"/></symbol>
+    <symbol id="a-spikes" viewBox="0 0 120 30"><path fill="currentColor" stroke="none" d="M0 30 10 0l10 30L30 4l10 26L50 0l10 30L70 4l10 26L90 0l10 30 10-26 10 26Z"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#login-main" data-skip>Перейти до змісту</a>
+
+  <!-- Завантаження -->
+  <div class="adm-boot" data-boot role="status">
+    <span class="logo">Tattoo&nbsp;<span>House</span></span>
+    <span class="sr-only">Завантаження адмінки</span>
+    <!-- з'являється, лише якщо скрипти не запустилися за 8 секунд (обірвалося з'єднання тощо) -->
+    <p class="adm-boot__slow">Адмінка довго завантажується. <a class="ulink" href="">Оновити сторінку</a></p>
+  </div>
+
+  <!-- Вхід -->
+  <div class="adm-login" data-login hidden>
+    <div class="adm-login__side surface-pink" aria-hidden="true">
+      <span class="logo">Tattoo&nbsp;<span>House</span></span>
+      <svg class="adm-spikes" aria-hidden="true"><use href="#a-spikes"/></svg>
+      <p class="adm-login__tag">Адмінка салону: майстри, записи, розіграш</p>
+    </div>
+    <main class="adm-login__main" id="login-main">
+      <a class="logo adm-login__logo" href="../index.html">Tattoo&nbsp;<span>House</span></a>
+      <span class="label">Адмінка</span>
+      <h1>Вхід</h1>
+      <form class="form" data-login-form novalidate>
+        <div class="field" data-f="login">
+          <label for="l-login">E-mail</label>
+          <input id="l-login" name="login" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" inputmode="email" required>
+        </div>
+        <div class="field field--reveal" data-f="password">
+          <label for="l-pass">Пароль</label>
+          <input id="l-pass" name="password" type="password" autocomplete="current-password" required>
+          <button class="field__reveal" type="button" aria-label="Показати пароль" aria-pressed="false" data-reveal><svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg></button>
+        </div>
+        <p class="adm-login__error" data-login-error role="alert" hidden></p>
+        <button class="btn btn--solid" type="submit" data-login-submit>
+          <span class="btn__fill"></span><span class="btn__label">Увійти в&nbsp;адмінку</span>
+          <svg class="icon icon--arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </button>
+      </form>
+      <div class="adm-login__demo">
+        <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+        <p>Вхід лише для адміністратора салону. Забули пароль? Його скидають у&nbsp;панелі Supabase.</p>
+      </div>
+      <a class="ulink adm-login__back" href="../index.html">Повернутися на&nbsp;сайт</a>
+    </main>
+  </div>
+
+  <!-- Адмінка -->
+  <div class="adm-app" data-app hidden>
+    <header class="adm-top">
+      <a class="logo" href="#bookings" aria-label="Tattoo House, адмінка: на першу сторінку">Tattoo&nbsp;<span>House</span></a>
+      <div class="adm-top__actions">
+        <a class="adm-iconlink" href="../index.html" target="_blank" rel="noopener" aria-label="Відкрити сайт у новій вкладці" title="Відкрити сайт"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg></a>
+        <button class="adm-iconlink" type="button" data-logout aria-label="Вийти" title="Вийти"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg></button>
+      </div>
+    </header>
+
+    <aside class="adm-side surface-pink">
+      <a class="logo" href="#bookings" aria-label="Tattoo House, адмінка: на першу сторінку">Tattoo&nbsp;<span>House</span></a>
+      <svg class="adm-spikes" aria-hidden="true"><use href="#a-spikes"/></svg>
+      <span class="label">Адмінка</span>
+      <nav class="adm-nav" aria-label="Розділи адмінки" data-nav-side></nav>
+      <div class="adm-side__foot">
+        <p class="adm-side__user" data-user></p>
+        <a class="ulink" href="../index.html" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Відкрити сайт</a>
+        <button class="ulink adm-side__logout" type="button" data-logout><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Вийти</button>
+      </div>
+    </aside>
+
+    <main class="adm-main" id="adm-main" tabindex="-1" data-view></main>
+
+    <nav class="adm-tabbar" aria-label="Розділи адмінки" data-nav-bottom></nav>
+  </div>
+
+  <noscript><p class="empty">Адмінка працює лише з увімкненим JavaScript.</p></noscript>
+</body>
+</html>
