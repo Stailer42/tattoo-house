@@ -13,3 +13,5 @@ admin-panel копія/
 !.env.example
 config.js
 __pycache__/
+# editor settings
+.vscode/
