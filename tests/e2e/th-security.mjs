@@ -27,7 +27,8 @@ const check = (name, ok, extra = "") => {
   console.log((ok ? "ok   " : "FAIL ") + name + (extra ? "  " + extra : ""));
 };
 async function req(method, path, body) {
-  const r = await fetch(URL_ + path, { method, headers: H, body: body ? JSON.stringify(body) : undefined });
+  // return=representation: PATCH/DELETE повертають змінені рядки, тож «0 рядків» видно як []
+  const r = await fetch(URL_ + path, { method, headers: { ...H, Prefer: "return=representation" }, body: body ? JSON.stringify(body) : undefined });
   const t = await r.text();
   let j = null;
   try { j = t ? JSON.parse(t) : null; } catch (e) { j = t; }
@@ -60,7 +61,7 @@ check("anon НЕ видаляє записи", delb.status >= 400 || (Array.isAr
 
 // адмінські функції
 for (const fn of ["draw_giveaway", "reset_giveaway", "clear_giveaway_winner", "update_giveaway_settings"]) {
-  const r = await req("POST", "/rest/v1/rpc/" + fn, {});
+  const r = await req("POST", "/rest/v1/rpc/" + fn, fn === "update_giveaway_settings" ? { p_patch: { enabled: false } } : {});
   check("anon НЕ викликає " + fn, r.status >= 400, r.status + " " + JSON.stringify(r.body).slice(0, 80));
 }
 

@@ -138,6 +138,9 @@ grant insert, update, delete on services, masters, gallery, reviews, settings to
 grant select, insert, update, delete on bookings, giveaway_entries to authenticated;
 grant select on admins to authenticated;
 revoke all on bookings, giveaway_entries, admins from anon;
+-- Supabase за замовчуванням дає anon усі права на нові таблиці; писати anon не повинен ніде
+-- (RLS і так блокує, це захист у глибину)
+revoke insert, update, delete, truncate on services, masters, gallery, reviews, settings from anon;
 
 alter table admins           enable row level security;
 alter table services         enable row level security;

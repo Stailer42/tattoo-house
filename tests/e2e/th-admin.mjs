@@ -61,6 +61,14 @@ const check = (name, ok, extra = "") => {
   console.log((ok ? "ok   " : "FAIL ") + name + (extra !== "" ? "  " + extra : ""));
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitCheck(name, expr, timeout = 15000) {
+  try {
+    await b.waitFor(expr, timeout);
+    check(name, true);
+  } catch (e) {
+    check(name, false, String(e.message).split("\n")[0]);
+  }
+}
 const errors = () => b.logs.filter((l) => !/favicon|Supabase не налаштовано|auth\/v1\/token/.test(l));
 
 // Помічники в сторінці адмінки
@@ -91,18 +99,21 @@ const HELP = `window.__t = {
 async function admin(hash, settle = 500) {
   await b.goto(BASE + "admin/" + (hash ? "#" + hash : ""), settle);
   await b.eval(HELP);
-  if (hash) await b.waitFor(`document.title.startsWith(${JSON.stringify(sectionTitle(hash))})`, 10000);
+  if (hash) await b.waitFor(`(document.querySelector('.adm-view .adm-title') || {}).textContent && document.querySelector('.adm-view .adm-title').textContent.startsWith(${JSON.stringify(sectionTitle(hash))})`, 15000);
 }
 const TITLES = { bookings: "Записи", masters: "Майстри", gallery: "Галерея", giveaway: "Розіграш", services: "Послуги", reviews: "Відгуки", info: "Основна", settings: "Налаштування" };
 const sectionTitle = (h) => TITLES[h];
 async function go(hash) {
   await b.eval(`location.hash = ${JSON.stringify(hash)}`);
-  await b.waitFor(`document.title.startsWith(${JSON.stringify(sectionTitle(hash))}) && document.querySelector('.adm-view')`, 10000);
+  // заголовок вкладки міняється до завантаження даних, тому чекаємо намальований розділ
+  await b.waitFor(`(document.querySelector('.adm-view .adm-title') || {}).textContent && document.querySelector('.adm-view .adm-title').textContent.startsWith(${JSON.stringify(sectionTitle(hash))})`, 15000);
   await sleep(300);
   await b.eval(HELP);
 }
 async function waitToast(re, timeout = 10000) {
   await b.waitFor(`/${re}/.test(document.querySelector('.adm-toast') ? document.querySelector('.adm-toast').textContent : '')`, timeout);
+  // гасимо знайдений тост: наступна дія має дочекатися СВОГО, а не побачити цей (він висить 3 с)
+  await b.eval("document.querySelector('.adm-toast').textContent = ''");
 }
 async function confirmDialog(okText) {
   await b.waitFor(`__t.dlg() && __t.btn(${JSON.stringify(okText)}, __t.dlg())`);
@@ -163,7 +174,7 @@ await b.waitFor("__t.dlg().querySelector('.adm-frame img[src^=\"blob:\"]')", 100
 await shot("masters-dialog");
 await b.eval("__t.click('Додати майстра', __t.dlg())");
 await waitToast("додано");
-check("майстри: новий з'явився в списку", (await b.eval("__t.rows()")).includes("E2E Майстер"));
+await waitCheck("майстри: новий з'явився в списку", "__t.rows().includes('E2E Майстер')");
 
 await site("masters.html", 1200);
 await b.waitFor("document.querySelector('#masters-full article#e2e')", 10000);
@@ -186,7 +197,7 @@ await b.waitFor("__t.dlg()");
 await b.eval("__t.click('Видалити', __t.dlg())");
 await confirmDialog("Видалити");
 await waitToast("видалено");
-check("майстри: видалено", !(await b.eval("__t.rows()")).includes("E2E Майстер"));
+await waitCheck("майстри: видалено", "__t.rows().length && !__t.rows().includes('E2E Майстер')");
 if (mock) check("майстри: файл фото прибрано зі сховища", ![...mock.files.keys()].some((k) => k.startsWith("masters/")));
 
 /* ================= галерея ================= */
@@ -208,8 +219,7 @@ await b.eval(`(() => {
 await shot("gallery-upload");
 await b.eval("__t.click('Додати в галерею', __t.dlg())");
 await waitToast("Додано фото: 2", 20000);
-const galRows = await b.eval("__t.rows()");
-check("галерея: 2 нові фото першими", galRows.length === galBefore + 2 && galRows[0] === "E2E фото 1" && galRows[1] === "E2E фото 2", galRows.slice(0, 3).join(" | "));
+await waitCheck("галерея: 2 нові фото першими", `__t.rows().length === ${galBefore + 2} && __t.rows()[0] === "E2E фото 1" && __t.rows()[1] === "E2E фото 2"`);
 await shot("gallery");
 await site("gallery.html", 1200);
 await b.waitFor(`document.getElementById('gallery-count').textContent === '${galBefore + 2}'`, 10000);
@@ -222,7 +232,7 @@ for (const n of [1, 2]) {
   await confirmDialog("Видалити");
   await waitToast("видалено");
 }
-check("галерея: тестові фото видалено", (await b.eval("__t.rows()")).length === galBefore);
+await waitCheck("галерея: тестові фото видалено", `__t.rows().length === ${galBefore}`);
 if (mock) check("галерея: файли прибрано зі сховища", ![...mock.files.keys()].some((k) => k.startsWith("gallery/")));
 
 /* ================= послуги ================= */
@@ -285,20 +295,20 @@ await shot("bookings-dialog");
 await b.eval("__t.set('Нотатка адміністратора', 'E2E: передзвонити')");
 await b.eval("__t.click('Підтвердити запис', __t.dlg())");
 await waitToast("підтверджено");
-check("адмінка: статус «Підтверджена»", await b.eval(`/Підтверджена/.test([...document.querySelectorAll('.adm-tr')].find((r) => r.textContent.includes(${JSON.stringify(code)})).textContent)`));
+await waitCheck("адмінка: статус «Підтверджена»", `/Підтверджена/.test(([...document.querySelectorAll('.adm-tr')].find((r) => r.textContent.includes(${JSON.stringify(code)})) || {}).textContent || '')`);
 await b.eval(`[...document.querySelectorAll('.adm-tr')].find((r) => r.textContent.includes(${JSON.stringify(code)})).querySelector('.adm-table__open').click()`);
 await b.waitFor("__t.dlg()");
 check("адмінка: нотатка збереглась", (await b.eval("__t.field('Нотатка адміністратора').value")) === "E2E: передзвонити");
 await b.eval("__t.click('Скасувати запис', __t.dlg())");
 await confirmDialog("Скасувати запис");
 await waitToast("скасовано");
-check("адмінка: статус «Скасована»", await b.eval(`/Скасована/.test([...document.querySelectorAll('.adm-tr')].find((r) => r.textContent.includes(${JSON.stringify(code)})).textContent)`));
+await waitCheck("адмінка: статус «Скасована»", `/Скасована/.test(([...document.querySelectorAll('.adm-tr')].find((r) => r.textContent.includes(${JSON.stringify(code)})) || {}).textContent || '')`);
 await b.eval(`[...document.querySelectorAll('.adm-tr')].find((r) => r.textContent.includes(${JSON.stringify(code)})).querySelector('.adm-table__open').click()`);
 await b.waitFor("__t.dlg()");
 await b.eval("__t.click('Видалити', __t.dlg())");
 await confirmDialog("Видалити");
 await waitToast("видалено");
-check("адмінка: тестовий запис видалено", !(await b.eval(`document.querySelector('.adm-view').textContent.includes(${JSON.stringify(code)})`)));
+await waitCheck("адмінка: тестовий запис видалено", `!document.querySelector('.adm-view').textContent.includes(${JSON.stringify(code)})`);
 
 // повертаємо ціну послуги
 await go("services");
@@ -350,7 +360,7 @@ if (!LIVE) {
   await b.eval("__t.click('Скинути розіграш')");
   await confirmDialog("Скинути");
   await waitToast("скинуто");
-  check("адмінка: розіграш скинуто", (await b.eval("document.querySelectorAll('.adm-tr').length")) === 0 && !(await b.eval("!!document.querySelector('.adm-winner')")));
+  await waitCheck("адмінка: розіграш скинуто", "document.querySelectorAll('.adm-tr').length === 0 && !document.querySelector('.adm-winner')");
 } else {
   await admin("giveaway", 800);
   await b.eval(`[...document.querySelectorAll('.adm-tr')].find((r) => r.textContent.includes(${JSON.stringify(igA)})).querySelector('.adm-table__open').click()`);
