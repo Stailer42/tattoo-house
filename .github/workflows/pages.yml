@@ -1,0 +1,53 @@
+# Tattoo House: деплой на GitHub Pages.
+# config.js (адреса й anon-ключ Supabase) збирається тут із секретів репозиторію
+# SUPABASE_URL і SUPABASE_ANON_KEY і в git не потрапляє.
+# Без секретів сайт деплоїться в демо-режимі (стартові дані, форми в браузері).
+# Публікуються лише файли сайту: supabase/, tools/, tests/, .env.example не виходять назовні.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build config.js from secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
+            python3 tools/make_config.py
+          else
+            echo "No Supabase secrets: deploying in demo mode"
+          fi
+
+      - name: Assemble site
+        run: |
+          mkdir _site
+          cp -R index.html gallery.html masters.html booking.html style.css script.js favicon.png assets lib admin _site/
+          if [ -f config.js ]; then cp config.js _site/; fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
